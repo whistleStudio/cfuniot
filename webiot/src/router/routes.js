@@ -1,5 +1,6 @@
 const Login = () => import("views/login/Login")
 const Register = () => import("views/register/Register")
+const User = () => import("views/user/User")
 
 const routes = [
   {
@@ -13,6 +14,10 @@ const routes = [
   {
     path: "/register",
     component: Register
+  },
+  {
+    path: "/user",
+    component: User
   }
 ]
 
