@@ -92,6 +92,7 @@ export default {
     height: 80px;
     width: 100%;
     box-shadow: 0 1px 1px gainsboro;
+    background-color: white;
     /* z-index: 9; */
   }
   #navbar>div:first-of-type {

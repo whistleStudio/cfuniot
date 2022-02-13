@@ -1,7 +1,9 @@
 <template>
 <div id="userPage">
-  <p-menu-nav></p-menu-nav>
-  <div id="contentPage">
+  <div>
+    <p-menu-nav></p-menu-nav>
+  </div>
+  <div>
     <router-view></router-view>
   </div>
 </div>
@@ -21,9 +23,12 @@ export default {
 </script>
 
 <style scoped>
-#contentPage {
-  position: absolute;
-  left: 200px;
-  top: 80px;
+#userPage>div:first-of-type {
+  z-index: 2;
+}
+#userPage>div:last-of-type {
+  padding-top: 80px;
+  padding-left: 200px;
+  background-color: rgba(240,240,240,0.5);
 }
 </style>
