@@ -47,12 +47,12 @@ export default {
       .then(res => res.json()
       .then(data => {
         if(!data.err) {
-          // const state = { 'us': data.tk }
-          // const title = ''
-          // const url = `/user` 
-          // history.pushState(state, title, url)
+          const token = data.tkid
+          sessionStorage.setItem("token", token)
           this.$router.push("/user")
-        }else alert(data.msg)
+        }else {
+          sessionStorage.removeItem("token")
+          alert(data.msg)}
       }))         
     }
   }

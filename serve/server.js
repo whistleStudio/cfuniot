@@ -22,7 +22,7 @@ app.use(['/user','/dev','/ctrl','/data'], function(req, res, next) {
 			req.userx = data;
 			return next();
 		}).catch((error)=>{
-			res.send('token失效， 请重新登录')
+			res.send('token失效, 请重新登录')
 			// return next();
 		})
 	}

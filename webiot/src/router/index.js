@@ -13,5 +13,14 @@ const router = new VueRouter({
   mode: "history"
 })
 
+router.beforeEach((to, from, next) => {
+  let token = sessionStorage.getItem("token")
+  if (token || to.path === "/login") {
+    next()
+  } else {
+    next("/login")
+    alert("token失效, 请重新登录")
+  }
+})
 
 export default router
