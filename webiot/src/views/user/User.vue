@@ -29,6 +29,5 @@ export default {
 #userPage>div:last-of-type {
   padding-top: 80px;
   padding-left: 200px;
-  background-color: rgba(240,240,240,0.5);
 }
 </style>

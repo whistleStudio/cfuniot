@@ -6,7 +6,9 @@ const staticPath = __dirname
 let path = require('path')
 
 const logRouter = require('./public/js/routes/logRouter')
-
+const userRouter = require('./public/js/routes/userRouter')
+const devRouter = require('./public/js/routes/devRouter')
+userRouter.stp = staticPath
 
 var verToken = require('./public/js/validate/tokenVerify');
 const cookieParser = require('cookie-parser')
@@ -37,6 +39,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(staticPath, '')))
 
 app.use('/login', logRouter)
+app.use('/user', userRouter)
+app.use('/dev', devRouter)
 
 
 

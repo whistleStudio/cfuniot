@@ -15,7 +15,7 @@ rt.post('/', (req, res) => {
       let usid = pwd + doc.logDate.toString()
       setToken.setToken(us,usid).then((data)=>{
         // maxAge(ms)
-        res.cookie('token',data,{maxAge: 3600000*3, httpOnly: true})
+        res.cookie('token',data,{maxAge: 3600000*24, httpOnly: true})
         res.json({ err:0, tkid: data, tk:mail});
       })
     }else {

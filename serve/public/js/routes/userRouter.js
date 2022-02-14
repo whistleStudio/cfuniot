@@ -111,11 +111,13 @@ rt.get('/getCode', (req, res) => {
   if (parseInt(i)) {
     let code = genCode()
     User.findOneAndUpdate({mail}, {code}, {new:true}, (err, doc) => {
-      res.json({err:0, code:doc.code})
+      if (!err) res.json({err:0, code:doc.code})
+      else {console.log(new Date(), err);res.json({err:5})}
     })
   }else {
     User.findOne({mail}, (err, doc) => {
-      res.json({err:0, code:doc.code})
+      if (!err) res.json({err:0, code:doc.code})
+      else {console.log(new Date(), err);res.json({err:5})}
     })
   }
 })

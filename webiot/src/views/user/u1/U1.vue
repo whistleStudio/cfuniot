@@ -1,15 +1,87 @@
 <template>
-  <div>
-    <h1>u1111</h1>
+  <div id='u1-box'>
+    <div id='tag'>
+      <ul class="nav nav-tabs">
+
+      </ul>
+    </div>
+    <div id='controller' >
+      <div></div>
+      <div class="input-group mb-3" id='sendMsgW'>
+        <button class="btn btn-outline-primary" type="button" id="button-addon1">发送会话</button>
+        <input type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
+      </div>
+      <div id="controlNum">
+        <button v-for="(v,i) in btns" :key="i" type="button" class="btn btn-outline-primary">{{v}}</button>
+        <div v-for="(v,i) in Array(4)" :key="i+10" class="controller-range">
+          <label :for="`customRange${i+1}`" class="form-label">滑杆{{i+1}}&nbsp;&nbsp;&nbsp;<span>[ 0 ]</span></label>
+          <input type="range" class="form-range" :id="`customRange${i+1}`" min="0" max='100' value="0">
+        </div>
+      </div>
+    </div>
+    <p-comment></p-comment>
   </div>
 </template>
 
 <script>
-export default {
+import PComment from "components/private/PComment"
 
+export default {
+  data () {
+    return {
+      btns: ["按钮A", "按钮B", "按钮C", "按钮D"]
+    }
+  },
+  components: {
+    "p-comment": PComment
+  }
 }
 </script>
 
-<style>
+<style scoped>
+#u1-box {
+  width: 100%;
+}
+#tag {
+  margin-top: 20px;
+  margin-left: 80px;
+}
+#tag a {
+  color: rgb(173, 181, 189);
+}
+#tag .active {
+  color: rgb(77, 212, 172);
+  font-weight: bold;
+}
+#controller {
+  margin-left: 80px;
+  width: 1000px;
+  height: 800px;
+  padding-top: 20px;
+  float: left;
+}
+
+#sendMsgW {
+  margin-top: 30px;
+}
+
+
+#controlNum {
+  margin-top: 50px;
+}
+#controlNum>button {
+  width: 100px;
+  height: 50px;
+  margin-right: 100px;
+}
+.controller-range {
+  margin-top: 50px;
+}
+.controller-range span {
+  color: rgb(61, 141, 233);
+}
+
+
+
 
 </style>

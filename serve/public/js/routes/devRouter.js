@@ -4,6 +4,7 @@ const Device = require('../db/model/Device')
 const User = require('../db/model/User')
 
 rt.get('/getDevList', (req, res) => {
+  console.log('getDevList')
   let user = req.userx.name
   Device.find({user}, (err, doc) => {
     res.json({err:0, data:doc})

@@ -3,3 +3,5 @@
 [202202131155] sessionStorage添加token, router.beforeEach路由拦截判定是否存在token
 [202202132013] /user页面布局 /user/device(ctrl,data)路由，bootstrap模态框弹出，modal父级不要设置position:fixed
 [202202132055] u0页面布局
+[20220214] u1 u2 页面布局
+api: /user/getCode ✔
