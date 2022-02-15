@@ -32,11 +32,21 @@ export default {
         this.$store.commit("changeVal", {k:"curName", v:data.name})
         this.$store.commit("changeVal", {k:"curMail", v:data.mail})
         this.$store.commit("changeVal", {k:"curAvatar", v:data.avatar})
+        this.$store.commit("changeVal", {k:"curAuth", v:data.authority})
+      }))
+    },
+    rGetDevInfoReset () {
+      fetch(`/api/dev/getDevlist`)
+      .then(res => res.json()
+      .then(data => {
+        this.$store.commit("changeVal", {k:"curDevs", v:data.data})
+        this.$store.commit("resetDevState")
       }))
     }
   },
   created () {
-    this.rGetUserInfo ()
+    this.rGetUserInfo()
+    this.rGetDevInfoReset()
   }
 }
 </script>

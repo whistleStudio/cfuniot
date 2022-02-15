@@ -55,11 +55,11 @@
                   </div>
                   <div class="col-9">
                     <!-- <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline"> -->
-                    <img src="/public/pic/lvl.png" alt=""><span id='lvl'>管理员</span>
+                    <img :src="require('img/user/lvl.png')" alt=""><span id='lvl'>LV{{curAuth}}</span>
                     <button id="btnLvl" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#lvlModal">权限升级</button>
                   </div>
                   <div class="offset-3">
-                    <span id='invalidDate'>失效时间：2022-2-22</span>
+                    <span id='invalidDate'>失效时间: 2022-2-22</span>
                   </div>         
                 </div>
                 <!-- 账号安全 -->
@@ -79,7 +79,6 @@
     </div>
     </div>      
   </div>
-
 </template>
 
 <script>
@@ -98,6 +97,9 @@ export default {
     },
     curMail: function () {
       return this.$store.state.curMail
+    },
+    curAuth: function () {
+      return this.$store.state.curAuth
     }
   },
 }

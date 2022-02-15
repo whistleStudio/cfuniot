@@ -22,7 +22,17 @@ const store = new Vuex.Store({
   },
   mutations: {
     changeVal (state, pl) {
+      // console.log(pl)
       state[pl.k] = pl.v
+    },
+    resetDevState (state) {
+      for(let i in state.curDevs) {
+        state.curBtns.push(Array(4).fill(0))
+        state.curRans.push(Array(4).fill(0))
+        state.timData.push(Array(8))
+        state.dataState.push(Array(9).fill(0).concat(-1))
+        state.graCache.push(Array(9).fill(0).map(e => Array()))
+      }
     }
   },
   actions: {
