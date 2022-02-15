@@ -4,4 +4,7 @@
 [202202132013] /user页面布局 /user/device(ctrl,data)路由，bootstrap模态框弹出，modal父级不要设置position:fixed
 [202202132055] u0页面布局
 [20220214] u1 u2 页面布局
-api: /user/getCode ✔
+u0-api: /user/getCode ✔
+[202202151213] vuex state设置 
+user-api: user/getUserInfo
+NavBar view数据绑定

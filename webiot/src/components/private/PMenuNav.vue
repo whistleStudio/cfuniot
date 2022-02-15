@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav-bar></nav-bar>
+    <nav-bar/>
     <menu-left></menu-left>
   </div>
 </template>
@@ -11,8 +11,11 @@ import NavBar from "components/common/NavBar"
 
 export default {
   data () {
-    return {}
+    return {
+
+    }
   },
+
   components: {
     "menu-left": MenuLeft,
     "nav-bar": NavBar

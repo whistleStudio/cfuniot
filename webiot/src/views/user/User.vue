@@ -1,10 +1,12 @@
 <template>
 <div id="userPage">
   <div>
-    <p-menu-nav></p-menu-nav>
+    <p-menu-nav/>
   </div>
+ 
   <div>
-    <router-view></router-view>
+     <!-- <button @click="$store.state.curAvatar++">clll</button> -->
+    <router-view/>
   </div>
 </div>
 </template>
@@ -14,10 +16,27 @@ import PMenuNav from "components/private/PMenuNav"
 
 export default {
   data () {
-    return {}
+    return {
+      
+    }
   },
   components: {
     "p-menu-nav": PMenuNav
+  },
+  methods: {
+    rGetUserInfo () {
+      fetch("/api/user/getUserInfo")
+      .then(res => res.json()
+      .then(data => {
+        console.log(data)
+        this.$store.commit("changeVal", {k:"curName", v:data.name})
+        this.$store.commit("changeVal", {k:"curMail", v:data.mail})
+        this.$store.commit("changeVal", {k:"curAvatar", v:data.avatar})
+      }))
+    }
+  },
+  created () {
+    this.rGetUserInfo ()
   }
 }
 </script>

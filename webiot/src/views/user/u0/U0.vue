@@ -111,7 +111,7 @@ export default {
       ths: ["名称","id","状态"],
       code: "",
       devs: [],
-      newDev: {name: "", did: -1}
+      newDev: {name: "", did: undefined}
     }
   },
   methods: {

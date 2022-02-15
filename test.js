@@ -1,4 +1,3 @@
-for (let i in Array(4)) {
-  console.log(Array(4))
-}
-console.log(Array(4))
+let o = {a:Number()}
+// o.a = "1"
+console.log(o.a)
