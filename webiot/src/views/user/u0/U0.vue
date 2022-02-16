@@ -7,7 +7,8 @@
       <li v-for="(v,i) in devIcons" :key="i" :data-bs-toggle="v.toggle" :data-bs-target="v.target">
         <img :src="require(`img/u0/iconInfo0.png`)" alt="">
         <span>{{v.name}}</span>
-        <span v-if="i<2">{{v.count}}</span>
+        <span v-if="i==0">{{allCount}}</span>
+        <span v-if="i==1">{{olCount}}</span>
       </li>
     </ul>
     </div>
@@ -21,7 +22,7 @@
           </tr>
         </thead>
         <tbody id='showDev'>
-          <tr v-for="(v,i) in devs" :key="i" >
+          <tr v-for="(v,i) in $store.state.curDevs" :key="i" >
             <th scope="row">{{v.name}}</th>
             <td>{{v.did}}</td>
             <td>{{v.state? "在线":"离线"}}</td>
@@ -51,12 +52,12 @@
         <span>名称</span><span>ID</span>
       </div>
       <ul>
-        <li v-for="(v,i) in devs" :key="i" class='devListModal'>
+        <li v-for="(v,i) in $store.state.curDevs" :key="i" class='devListModal'>
           <div class='devShow'>
             <span>{{v.name}}</span>
             <span>{{v.did}}</span>
             <span class='devEdit'>编辑</span>
-            <span class='devDelete'>删除</span>
+            <span @click="delDev(i)" class='devDelete'>删除</span>
           </div>
           <div class='devChange hide'>
             <input type="text" class="form-control editDevName"  >
@@ -70,7 +71,7 @@
     <div class="modal-footer">
       <input v-model="newDev.name" type="text" class="form-control" id="devInput1" placeholder="输入设备名称">
       <input v-model="newDev.did" type="text" class="form-control" id="devInput2" placeholder="输入设备ID(1-255)">
-      <button type="button" class="btn btn-primary" id='regDevBtn' >新增设备</button>
+      <button @click="regNewDev" type="button" class="btn btn-primary" id='regDevBtn' >新增设备</button>
       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">返回</button>
     </div>
     </div>
@@ -103,15 +104,26 @@ export default {
   data () {
     return {
       devIcons: [
-        {name: "设备总量", img: "iconInfo0.png", count: 0, toggle: null, target: null},
-        {name: "在线设备", img: "iconInfo1.png", count:0, toggle: null, target: null},
+        {name: "设备总量", img: "iconInfo0.png", toggle: null, target: null},
+        {name: "在线设备", img: "iconInfo1.png", toggle: null, target: null},
         {name: "连接秘钥", img: "iconInfo2.png", toggle: "modal", target: "#codeModal"},
         {name: "管理设备", img: "iconInfo3.png", toggle: "modal", target: "#devModal"},
       ],
       ths: ["名称","id","状态"],
       code: "",
-      devs: [],
       newDev: {name: "", did: undefined}
+    }
+  },
+  computed: {
+    allCount: function () {
+      return this.$store.state.curDevs.length
+    },
+    olCount: function () {
+      let n = 0
+      for(let v of this.$store.state.curDevs) {
+        if (v.state) n+=1
+      }
+      return n
     }
   },
   methods: {
@@ -130,24 +142,33 @@ export default {
         fetch(`/api/dev/getDevlist`)
         .then(res => res.json()
         .then(data => {
-          this.devs = data.data
-          this.devIcons[0].count = this.devs.length
-          this.devIcons[1].count = 0
-          for(let v of this.devs) {
-            if (v.state) this.devIcons[1].count+=1
-          }
-          // 【待测:在线、总量计数更新，未添加:全局变量更新】
+          this.$store.commit("changeVal", {k:"curDevs", v:data.data})
           resolve()
         }))
         .catch(e => reject())
       })
     },
-    rRegDev () {
-      let name = $('#devInput1').val()
+    /* 注册新设备 */
+    regNewDev () {
+      let newDid = this.devRegOk(this.newDev.did, this.newDev.name)
+      if (newDid) {
+        ;(async () => {
+          try {
+            await this.rRegDev(newDid)
+            await this.rGetDevList()
+          } catch (e) {console.log(e)}          
+          // console.log('rRegDev')
+        })()
+
+      }
+    },
+    rRegDev (newDid) {
+      return new Promise((resolve, reject) => {
+      let name = this.newDev.name
       let did = newDid
-      let auth = curAuth
+      let auth = this.$store.state.curAuth
       if (name&&did) {
-        fetch('/dev/regDev', {
+        fetch('/api/dev/regDev', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json;charset=utf-8'
@@ -163,17 +184,13 @@ export default {
           // console.log('%%%%', data)
           if (data.err) alert(`err${data.err}: ${data.val}`)
           else {
-            curBtns.push([0,0,0,0]) 
-            curRans.push([0,0,0,0])
-            timData.push(Array(8))
-            dataState.push(Array(9).fill(0).concat(-1))
-            graCache.push(Array(8).fill(0).map(e => Array()))
+            this.$store.commit("addNewDev")
+            alert(`设备添加成功! ID:${did} 名称:${name}`)
           }
-          console.log(graCache)
           resolve()  
         }))
-        .catch(e => reject())
-      }         
+      } 
+      })
     },
     devRegOk (newDid, newDevName) {
       // 不为空
@@ -185,8 +202,8 @@ export default {
         return false 
       } else {
         let anyOk = true
-        this.devs.forEach(function (v) {
-          if (newDid == v.did) {
+        this.$store.state.curDevs.forEach(function (v) {
+          if (did == v.did) {
             anyOk = false
             alert(`你已经有一个ID:${v.did}设备了, 换个ID吧`)
             return 0
@@ -201,11 +218,32 @@ export default {
         if (!anyOk) return false
         else return did
       }
-    }      
+    },
+    /* 删除设备 */
+    delDev (i) {
+      let did = this.$store.state.curDevs[i].did
+      ;(async () => {
+        try {
+          await this.rDeleteDev(did)
+          await this.rGetDevList()
+          this.$store.commit("delDev", i)
+        } catch (e) {console.log(e)}
+      })()      
+    },
+    rDeleteDev (did) {
+      return new Promise((resolve, reject) => {
+        fetch(`/api/dev/delDev?did=${did}`)
+        .then(res => res.json()
+        .then(data => {
+          resolve()
+        }))
+      })      
+    },      
   },
   created () {
     this.rGenCode(0)
     this.rGetDevList()
+    this.clearTim()
   }
 }
 </script>

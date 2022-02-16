@@ -11,4 +11,7 @@ NavBar view数据绑定
 [202202152255] 今天去医院做了推拿，感觉还行吧 行吧(和阿宝一起)
 user-fn: rGetDevInfoReset ✔ 请求devs, 并初始化全局state
 user-fn: rGetUserInfo 将lvl请求也加了进去
-[202202161130] user-fn: changeAvatar ✔
+[202202161130] NavBar-fn: changeAvatar ✔
+NavBar-fn: changeName ✔ NavBar-fn: rUpLvl ✔ 
+原user.js差密码修改
+[202202161738] u0-fn: rGetDevList ✔ u0-fn: regNewDev ✔ u0-fn: delDev ✔

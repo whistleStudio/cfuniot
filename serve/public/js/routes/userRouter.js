@@ -21,8 +21,8 @@ rt.get('/changeMain', (req, res) => {
 rt.get('/getUserInfo', (req, res) => {
   let mail = req.userx.name
   User.findOne({mail}, (err, doc) => {
-    let {name, mail, publicTop, authority, avatar, subPublicTop, publicData} = doc
-    res.json({name, mail, publicTop, authority, avatar, subPublicTop, publicData})
+    let {name, mail, publicTop, authority, authDate, avatar, subPublicTop, publicData} = doc
+    res.json({name, mail, publicTop, authority, authDate, avatar, subPublicTop, publicData})
   })
 })
 

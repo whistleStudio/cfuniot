@@ -33,6 +33,7 @@ export default {
         this.$store.commit("changeVal", {k:"curMail", v:data.mail})
         this.$store.commit("changeVal", {k:"curAvatar", v:data.avatar})
         this.$store.commit("changeVal", {k:"curAuth", v:data.authority})
+        this.$store.commit("changeVal", {k:"curAuthDate", v:data.authDate})
       }))
     },
     rGetDevInfoReset () {

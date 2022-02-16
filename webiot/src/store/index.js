@@ -5,7 +5,7 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
-    curName: "", curMail: "", curAvatar: 0, curAuth: Number, 
+    curName: "", curMail: "", curAvatar: 0, curAuth: Number, curAuthDate: "",
     curDevs: [],
     /* tim0-3 ~ data tim4 ~ graph tim5 ~ msg */
     tim: Array(6),
@@ -33,6 +33,23 @@ const store = new Vuex.Store({
         state.dataState.push(Array(9).fill(0).concat(-1))
         state.graCache.push(Array(9).fill(0).map(e => Array()))
       }
+    },
+    addNewDev (state) {
+      state.curBtns.push([0,0,0,0]) 
+      state.curRans.push([0,0,0,0])
+      state.timData.push(Array(8))
+      state.dataState.push(Array(9).fill(0).concat(-1))
+      state.graCache.push(Array(8).fill(0).map(e => Array()))
+    },
+    delDev (state, idx) {
+      state.curBtns.splice(idx, 1)
+      state.curRans.splice(idx, 1)
+      if (state.timData[idx]) {
+        clearInterval(state.timData[idx])
+      }
+      state.timData.splice(idx, 1)
+      state.dataState.splice(idx, 1)
+      state.graCache.splice(idx, 1)      
     }
   },
   actions: {

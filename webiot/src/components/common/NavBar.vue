@@ -4,7 +4,7 @@
     <div>
       <span>{{curName}}</span>
       <div id="profile" :style="{backgroundImage: `url(${require('img/user/av'+curAvatar+'.jpg')})`}" 
-      data-bs-toggle="modal" data-bs-target="#profileModal"></div>
+      data-bs-toggle="modal" data-bs-target="#profileModal" @click="newNameInfo.sta=-1"></div>
     </div>
     </div>
     <!-- modal profile -->
@@ -34,9 +34,9 @@
                   </div>
                   <div class="col-9">
                     <input type="text" id="ipUsername" class="form-control" aria-describedby="passwordHelpInline" 
-                    :value="curName" :class="{'is-valid': newNameOk==1, 'is-invalid': newNameOk==0}" @blur="changeName">
-                    <div class="invalid-feedback" v-show="newNameOk==0">
-                      该用户名已经被使用了, 请更换
+                    :value="curName" :class="{'is-valid': newNameInfo.sta==0, 'is-invalid': newNameInfo.sta>0}" @blur="changeName">
+                    <div class="invalid-feedback" v-show="newNameInfo.sta>0">
+                      {{newNameInfo.hint[newNameInfo.sta]}}
                     </div>
                   </div>
                 </div>
@@ -60,7 +60,7 @@
                     <button id="btnLvl" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#lvlModal">权限升级</button>
                   </div>
                   <div class="offset-3">
-                    <span id='invalidDate'>失效时间: 2022-2-22</span>
+                    <span id='invalidDate' v-show="$store.state.curAuth>1">失效时间: {{curAuthDate}}</span>
                   </div>         
                 </div>
                 <!-- 账号安全 -->
@@ -95,7 +95,25 @@
       </div>
       </div>
       </div>
-    </div>      
+    </div>
+    <!-- modal uplvl -->
+    <div class="modal" id='lvlModal' tabindex="-1"  data-bs-backdrop="static">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+      <!-- <h5 class="modal-title">升级权限</h5> -->
+      <button type="button" class="btn-close" id="clsLvlModal" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body" style="height: 100px; padding-top: 30px;">
+      <input v-model="actCode" class="form-control" type="text" placeholder="请输入激活码" aria-label="default input example">
+    </div>
+    <div class="modal-footer">
+      <button id="cLvlModal" type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+      <button id="actLvl"  @click="rUpLvl" type="button" class="btn btn-primary">激活</button>
+    </div>
+    </div>
+    </div>
+    </div>          
   </div>
 </template>
 
@@ -104,7 +122,11 @@
 export default {
   data () {
     return {
-      newNameOk: -1
+      newNameInfo: {
+        sta: -1, 
+        hint: ["","该用户名已经被使用了, 请更换", "该用户名不合法; 6-16个字符, 可使用数字、字母、下划线"]
+      },
+      actCode: "",
     }
   },
   computed: {
@@ -119,6 +141,10 @@ export default {
     },
     curAuth: function () {
       return this.$store.state.curAuth
+    },
+    curAuthDate: function () {
+      let ivD = new Date(this.$store.state.curAuthDate)
+      return `${ivD.getFullYear()}-${ivD.getMonth()+1}-${ivD.getDate()}`
     }
   },
   methods: {
@@ -141,25 +167,40 @@ export default {
       console.log(newName)
       if (newName !== this.$store.state.curName) {
         if (reg.test(newName)) {
-          fetch(`/user/changeName?name=${newName}`)
+          fetch(`/api/user/changeName?name=${newName}`)
           .then(res => res.json()
           .then(data => {
             if (!data.err) {
-              this.newNameOk = 1
-              // ipN.removeClass('is-invalid').addClass('is-valid')
-              this.$store.commit("changeVal", {k: "curName", v: "newName"})
+              this.newNameInfo.sta = 0
+              this.$store.commit("changeVal", {k: "curName", v: newName})
             }else {
-              this.newNameOk = 0
+              this.newNameInfo.sta = 1
+              // 全是空格
               // database error 没写
-              // ipN.siblings('div').html('该用户名已经被使用了，请更换')
             }
           }))
         }else {
-          $ipN.removeClass('is-valid').addClass('is-invalid')
-          $ipN.siblings('div').html('该用户名不合法；6-16个字符，可使用数字、字母、下划线')
+          this.newNameInfo.sta = 2
         }
-      } else $ipN.removeClass('is-valid is-invalid')
-    }
+      } else this.newNameInfo.sta = -1
+    },
+    // 权限升级
+    rUpLvl () {
+      fetch(`/api/user/actLvl?code=${this.actCode}`)
+      .then(res => res.json()
+      .then(data => {
+        if (!data.err) {
+          this.$store.commit("changeVal", {k:"curAuth", v:data.auth})
+          this.$store.commit("changeVal", {k:"curAuthDate", v:data.authDate})
+        }
+        this.actCode = ''
+        alert(data.msg)
+      }))      
+    },
+    // 修改密码 (待补充)
+    resetPwd () {
+
+    }  
   }
 }
 </script>
