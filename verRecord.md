@@ -11,3 +11,4 @@ NavBar view数据绑定
 [202202152255] 今天去医院做了推拿，感觉还行吧 行吧(和阿宝一起)
 user-fn: rGetDevInfoReset ✔ 请求devs, 并初始化全局state
 user-fn: rGetUserInfo 将lvl请求也加了进去
+[202202161130] user-fn: changeAvatar ✔

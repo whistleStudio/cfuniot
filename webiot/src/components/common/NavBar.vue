@@ -33,9 +33,10 @@
                     <label for="ipUsername" class="col-form-label">用户名</label>
                   </div>
                   <div class="col-9">
-                    <input type="text" id="ipUsername" class="form-control" aria-describedby="passwordHelpInline" :value="curName">
-                    <div class="invalid-feedback">
-                      Looks bad!
+                    <input type="text" id="ipUsername" class="form-control" aria-describedby="passwordHelpInline" 
+                    :value="curName" :class="{'is-valid': newNameOk==1, 'is-invalid': newNameOk==0}" @blur="changeName">
+                    <div class="invalid-feedback" v-show="newNameOk==0">
+                      该用户名已经被使用了, 请更换
                     </div>
                   </div>
                 </div>
@@ -77,6 +78,23 @@
         </div>
       </div>
     </div>
+    </div>
+    <!-- modal avatar -->
+    <div class="modal" id='avatarModal' tabindex="-1">
+      <div class="modal-dialog">
+      <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">选择一个你喜欢的头像吧</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="avatarWrap">
+          <div v-for="(v, i) in Array(25)" :key="i" @click="changeAvatar(i)" class="item" 
+          :style="{backgroundImage: `url(${require('img/user/av'+i+'.jpg')})`}"></div>
+        </div>
+      </div>
+      </div>
+      </div>
     </div>      
   </div>
 </template>
@@ -86,6 +104,7 @@
 export default {
   data () {
     return {
+      newNameOk: -1
     }
   },
   computed: {
@@ -102,6 +121,46 @@ export default {
       return this.$store.state.curAuth
     }
   },
+  methods: {
+    // 更换头像
+    changeAvatar (i) {
+      this.$store.commit("changeVal", {k:"curAvatar", v:i})
+      this.rReqAvatar(i)
+      document.querySelector('#avatarModal button').click()
+    },
+    rReqAvatar (i) {
+      fetch(`/api/user/reqAvatar?avatar=${i}`)
+      .then(res => res.json()
+      .then(data => {console.log('reqAvatar---', data)}))      
+    },
+    // 更换昵称
+    changeName () {
+      let reg = /([A-Za-z0-9]|_){6,16}/
+      let ipN = document.querySelector('#ipUsername')
+      let newName = ipN.value
+      console.log(newName)
+      if (newName !== this.$store.state.curName) {
+        if (reg.test(newName)) {
+          fetch(`/user/changeName?name=${newName}`)
+          .then(res => res.json()
+          .then(data => {
+            if (!data.err) {
+              this.newNameOk = 1
+              // ipN.removeClass('is-invalid').addClass('is-valid')
+              this.$store.commit("changeVal", {k: "curName", v: "newName"})
+            }else {
+              this.newNameOk = 0
+              // database error 没写
+              // ipN.siblings('div').html('该用户名已经被使用了，请更换')
+            }
+          }))
+        }else {
+          $ipN.removeClass('is-valid').addClass('is-invalid')
+          $ipN.siblings('div').html('该用户名不合法；6-16个字符，可使用数字、字母、下划线')
+        }
+      } else $ipN.removeClass('is-valid is-invalid')
+    }
+  }
 }
 </script>
 
