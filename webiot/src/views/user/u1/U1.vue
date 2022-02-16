@@ -2,7 +2,9 @@
   <div id='u1-box'>
     <div id='tag'>
       <ul class="nav nav-tabs">
-
+        <li v-for="(v,i) in curDevs" :key="i" class="nav-item">
+          <a class="nav-link"  href="#">{{v.name}}</a>
+        </li>
       </ul>
     </div>
     <div id='controller' >
@@ -29,11 +31,18 @@ import PComment from "components/private/PComment"
 export default {
   data () {
     return {
-      btns: ["按钮A", "按钮B", "按钮C", "按钮D"]
+      btns: ["按钮A", "按钮B", "按钮C", "按钮D"],
+  
     }
+  },
+  computed : {
+    curDevs: function () {return this.$store.state.curDevs},
   },
   components: {
     "p-comment": PComment
+  },
+  created () {
+    this.clearTim()
   }
 }
 </script>

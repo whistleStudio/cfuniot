@@ -15,3 +15,5 @@ user-fn: rGetUserInfo 将lvl请求也加了进去
 NavBar-fn: changeName ✔ NavBar-fn: rUpLvl ✔ 
 原user.js差密码修改
 [202202161738] u0-fn: rGetDevList ✔ u0-fn: regNewDev ✔ u0-fn: delDev ✔
+[20220216] u0-fn: editDev ✔ u0页面完成
+u1 curDevs clearTim

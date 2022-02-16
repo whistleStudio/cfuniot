@@ -48,9 +48,11 @@ rt.post('/changeDevInfo', (req, res) => {
   let user = req.userx.name
   let {preDid, newName, newDid} = req.body
   ;(async () => {
-    let q = await Device.updateOne({user:user, did:preDid}, {name:newName, did:newDid})
-    if (q.modifiedCount > 0) res.json({err:0})
-    else res.json({err:1, msg:'no devInfo updated'})
+    try {
+      let q = await Device.updateOne({user:user, did:preDid}, {name:newName, did:newDid})
+      if (q.modifiedCount > 0) res.json({err:0, msg: "设备编辑成功"})
+      else res.json({err:1, msg:'no devInfo updated'})      
+    } catch (e) {console.log(new Date(), e); res.json({err:5, msg:"database error"})}
   })()
 })
 // rt.get('/ownDev', (req, res) => {

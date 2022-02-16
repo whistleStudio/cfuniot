@@ -26,14 +26,7 @@
             <th scope="row">{{v.name}}</th>
             <td>{{v.did}}</td>
             <td>{{v.state? "在线":"离线"}}</td>
-          </tr>
-        <!-- <tr>
-        <th scope="row">灯</th>
-        <td>sdsajkhd11</td>
-        <td>在线</td>
-        <td>yes</td>
-        </tr> -->
-        
+          </tr>        
         </tbody>
         </table>
     </div>
@@ -45,7 +38,7 @@
     <div class="modal-content">
     <div class="modal-header">
       <h5 class="modal-title" id="devModalLabel">设备管理</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <button @click="editIdx=-1" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
       <div>
@@ -53,17 +46,17 @@
       </div>
       <ul>
         <li v-for="(v,i) in $store.state.curDevs" :key="i" class='devListModal'>
-          <div class='devShow'>
+          <div class='devShow' v-show="editIdx !== i">
             <span>{{v.name}}</span>
             <span>{{v.did}}</span>
-            <span class='devEdit'>编辑</span>
+            <span @click="editClick(v.name, v.did, i)" class='devEdit'>编辑</span>
             <span @click="delDev(i)" class='devDelete'>删除</span>
           </div>
-          <div class='devChange hide'>
-            <input type="text" class="form-control editDevName"  >
-            <input type="text" class="form-control editDevId" >
-            <button type="button" class="btn btn-outline-success align-top">确定</button>
-            <button type="button" class="btn btn-outline-danger align-top">取消</button>
+          <div class='devChange' v-show="editIdx === i">
+            <input v-model="editName" type="text" class="form-control editDevName"  >
+            <input v-model="editDid" type="text" class="form-control editDevId" >
+            <button @click="editDev(v.name, v.did, i)" type="button" class="btn btn-outline-success align-top">确定</button>
+            <button @click="editIdx=-1" type="button" class="btn btn-outline-danger align-top">取消</button>
           </div>                     
         </li>  
       </ul>
@@ -71,8 +64,8 @@
     <div class="modal-footer">
       <input v-model="newDev.name" type="text" class="form-control" id="devInput1" placeholder="输入设备名称">
       <input v-model="newDev.did" type="text" class="form-control" id="devInput2" placeholder="输入设备ID(1-255)">
-      <button @click="regNewDev" type="button" class="btn btn-primary" id='regDevBtn' >新增设备</button>
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">返回</button>
+      <button @click="regNewDev" :disabled="editIdx != -1" type="button" class="btn btn-primary" id='regDevBtn' >新增设备</button>
+      <button @click="editIdx=-1" type="button" class="btn btn-secondary" data-bs-dismiss="modal">返回</button>
     </div>
     </div>
     </div>
@@ -111,7 +104,8 @@ export default {
       ],
       ths: ["名称","id","状态"],
       code: "",
-      newDev: {name: "", did: undefined}
+      newDev: {name: "", did: undefined},
+      editIdx: -1, editName: "", editDid: undefined
     }
   },
   computed: {
@@ -150,7 +144,7 @@ export default {
     },
     /* 注册新设备 */
     regNewDev () {
-      let newDid = this.devRegOk(this.newDev.did, this.newDev.name)
+      let newDid = this.devRegOk(this.newDev.name, this.newDev.did)
       if (newDid) {
         ;(async () => {
           try {
@@ -159,7 +153,6 @@ export default {
           } catch (e) {console.log(e)}          
           // console.log('rRegDev')
         })()
-
       }
     },
     rRegDev (newDid) {
@@ -192,7 +185,8 @@ export default {
       } 
       })
     },
-    devRegOk (newDid, newDevName) {
+    // 注册/编辑设备验证
+    devRegOk (newDevName, newDid, ignoreIdx=-1) {
       // 不为空
       if (!(parseInt(newDid) && newDevName)) return false
       // 1-255
@@ -202,16 +196,18 @@ export default {
         return false 
       } else {
         let anyOk = true
-        this.$store.state.curDevs.forEach(function (v) {
-          if (did == v.did) {
-            anyOk = false
-            alert(`你已经有一个ID:${v.did}设备了, 换个ID吧`)
-            return 0
-          }
-          if (newDevName == v.name) {
-            anyOk = false
-            alert(`你已经有一个${v.name}了, 换个名字吧`)
-            return 0
+        this.$store.state.curDevs.forEach(function (v,i) {
+          if (ignoreIdx !== i) {
+            if (did == v.did) {
+              anyOk = false
+              alert(`你已经有一个ID:${v.did}设备了, 换个ID吧`)
+              return 0
+            }
+            if (newDevName == v.name) {
+              anyOk = false
+              alert(`你已经有一个${v.name}了, 换个名字吧`)
+              return 0
+            }
           }
         })
 
@@ -238,7 +234,45 @@ export default {
           resolve()
         }))
       })      
-    },      
+    },  
+    /* 修改编辑设备 */
+    editClick (name, did, i) {
+      this.editName = name
+      this.editDid = did
+      this.editIdx = i
+    },
+    editDev (preName, preDid, i) {
+      let newName = this.editName, newDid = this.editDid
+      try {
+        if (!(preName==newName && preDid==newDid))
+        {
+          let did = this.devRegOk(newName, newDid, i)
+          if (did) {
+            ;(async () => {
+              await this.rEditDevInfo(preDid, newName, did)
+              await this.rGetDevList()
+            })()
+          }
+        }
+      } catch (e) {console.log(e)} 
+      this.editIdx = -1 
+    },
+    rEditDevInfo (preDid, newName, newDid) {
+      return fetch('/api/dev/changeDevInfo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+          preDid,
+          newName,
+          newDid
+        })       
+      })
+      .then(res => res.json()
+      .then(data => {alert(data.msg)}))      
+    }
+
   },
   created () {
     this.rGenCode(0)
@@ -249,9 +283,6 @@ export default {
 </script>
 
 <style scoped>
-.hide {
-  display: none !important;
-}
 #u0 {
   width: 100%;
 }
@@ -301,10 +332,7 @@ export default {
 #showDev>tr {
   font: 20px/80px sans-serif;
 }
-
-
 #devModal .modal-content {
-
   width: 800px;
   height: 500px;
 }
@@ -318,7 +346,6 @@ export default {
   font: bolder 20px/50px 微软雅黑;
   width: 300px;
   margin-right: 10px;
-  /* background-color: orange; */
 }
 #devModal .modal-footer {
   padding-right: 44px;
@@ -366,7 +393,6 @@ export default {
 #refreshDevBtn {
   height: 60px;
   font: 18px/60px sans-serif;
-  /* margin-left: 20px; */
 }
 
 
