@@ -6,6 +6,7 @@ const client =require('../mqtt/client')
 /* 处理按钮请求 */
 rt.post('/btnVal', (req, res) =>  {
   let {did,btnArr,user} = req.body
+  console.log(req.body)
   res.json({err:0})
   let btnBuf = Buffer.from(new Float32Array(btnArr).buffer)
   // byteOffset
@@ -18,7 +19,7 @@ rt.post('/btnVal', (req, res) =>  {
     console.log(user, '-btnBuf: ', btnBuf)
     // username/did/Cbtn  message: buffer  8unit 16bytelength
     client.publish(`${user}/${did}/Cbtn`, btnBuf, {retain:false})
-  }catch(e){console.log(e)}
+  }catch(e){console.log(new Date(), e)}
 })
 
 /* 处理滑杆请求 */
@@ -33,7 +34,7 @@ rt.post('/rangeVal', (req, res) => {
     console.log(user, '-ranBuf: ', ranBuf)
     // username/did/Cran message: buffer 8unit 12bytelength
     client.publish(`${user}/${did}/Cran`, ranBuf, {retain:false})
-  }catch(e){console.log(e)}
+  }catch(e){console.log(new Date(), e)}
 })
 
 /* 处理发送会话请求 */
@@ -43,7 +44,7 @@ rt.post('/pubMsgW', (req, res) => {
   try {
     console.log(user, '-msgW: ', msgW)
     client.publish(`${user}/${did}/CmsgW`, msgW, {retain:false})
-  }catch(e){console.log(e)}
+  }catch(e){console.log(new Date(), e)}
 })
 
 

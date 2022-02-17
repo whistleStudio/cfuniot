@@ -28,7 +28,7 @@ export default {
       fetch("/api/user/getUserInfo")
       .then(res => res.json()
       .then(data => {
-        console.log(data)
+        // console.log(data)
         this.$store.commit("changeVal", {k:"curName", v:data.name})
         this.$store.commit("changeVal", {k:"curMail", v:data.mail})
         this.$store.commit("changeVal", {k:"curAvatar", v:data.avatar})

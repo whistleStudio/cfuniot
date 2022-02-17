@@ -1,2 +1,7 @@
 let a = [1,2,3]
-console.log(...a)
+function b () {
+  console.log(arguments)
+  console.log(...arguments)
+}
+
+b(1,2,3)

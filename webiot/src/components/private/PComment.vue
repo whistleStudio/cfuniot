@@ -6,7 +6,7 @@
       <div></div>
       <div></div>
     </div>
-    <div id='note-content' class="init-content">
+    <div @click="noteActive" id='note-content' :class="{'init-content': clickFlag}">
       <div id="note-tab">
         <ul>
           <li v-for="(v, i) in commentIcons" :key="i" :id="v.id">
@@ -34,10 +34,33 @@
           {id: "noteEdit", img: "noteCtrl1.png"},
           {id: "noteHelp", img: "noteCtrl3.png", link: "https://markdown.com.cn/basic-syntax/"},
           {id: "noteMini", img: "noteCtrl4.png"}
-        ]
+        ],
+        clickFlag: 1,
+        commentMode: 1,
+        comment: ""
       };
     },
+    props: {
+      c_actDid: Number,
+    },
     components: {},
+    methods: {
+      noteActive (ev) {
+        let step = 10, pos = -460
+        if (this.clickFlag) {
+          this.clickFlag = 0
+          // $note.removeClass('init-content')
+          let tim = setInterval(() => {
+            // 有问题....
+            ev.target.style.setProperty('right', `${pos}px`, 'important')
+            // ev.target.style.right = pos+'px'
+            console.log(ev.target)
+            if (pos < 10) pos += step
+            else clearInterval(tim)
+          }, 100)
+        }        
+      }
+    }
   }
 </script>
 

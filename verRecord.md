@@ -20,4 +20,6 @@ u1 curDevs clearTim
 [02171402] 
 *问题* 如何保证页面刷新，异步请求的数据还未加载至页面，特别是请求数据为对象并需要调用它的属性
 "JSON.stringify(books) !== '[]'" 或者 加入统一的标志位
-[02171749] 节流 闭包 传参
+[02171749] 节流 闭包 传参 utils: throttle ✔
+[02172320] u1-fn: btnClick,changeRan,sendMsg (后台mqtt数据发送应该也是通的)✔ utils: getTextLen ✔ 该处理comment了
+*问题* changeArrVal是否要分开写 提高效率?还有待商榷

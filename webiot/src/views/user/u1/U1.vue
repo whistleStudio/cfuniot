@@ -10,8 +10,9 @@
     <div id='controller' >
       <div></div>
       <div class="input-group mb-3" id='sendMsgW'>
-        <button :disabled="!haveDev" class="btn btn-outline-primary" type="button" id="button-addon1">发送会话</button>
-        <input :disabled="!haveDev" type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
+        <button :disabled="!haveDev" @click="sendMsg" class="btn btn-outline-primary" type="button" id="button-addon1">发送会话</button>
+        <input :disabled="!haveDev" v-model="msg" 
+        type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
       </div>
       <div id="controlNum">
         <button v-for="(v,i) in btns" :key="i" @click="btnClick(i)"
@@ -32,17 +33,20 @@
 <script>
 import PComment from "components/private/PComment"
 import throttle from "utils/throttle"
+import getTextLen from "utils/getTextLen"
 export default {
   data () {
     return {
       btns: ["按钮A", "按钮B", "按钮C", "按钮D"],
+      msg: ""
     }
   },
   computed : {
+    curName: function () {return this.$store.state.curName},
     curDevs: function () {return this.$store.state.curDevs},
     curBtns: function () {return this.$store.state.curBtns},
     curRans: function () {return this.$store.state.curRans},
-    actDid: function () {return this.$store.state.curDevs[actCtrlIdx].did},
+    actDid: function () {return this.$store.state.curDevs[this.$store.state.curActCtrlIdx].did},
     haveDev: function () {return this.$store.state.curDevs.length},
     actCtrlIdx: function () {
       return this.$store.state.curActCtrlIdx}
@@ -51,16 +55,64 @@ export default {
     "p-comment": PComment
   },
   methods: {
+    /* 切换设备标签页 */
     changeTag (i) {
       this.$store.commit("changeVal", {k: "curActCtrlIdx", v: i})
     },
+    /* 点击按钮 */
     btnClick: throttle(function (i){
       this.$store.commit("changeBtnVal", {k: "curBtns", i: this.actCtrlIdx, j: i})
+      this.rBtnVal (this.actDid, this.curName)
     }),
-
-    changeRan (i, ev) {
+    rBtnVal (did, user) {
+      fetch(`/api/ctrl/btnVal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+          did, btnArr:this.curBtns[this.actCtrlIdx], user
+        })
+      })
+      .then(res => res.json()
+      .then(data => {
+        // console.log(data)
+      }))      
+    },
+    /* 拖动滑杆 */
+    changeRan: throttle(function (i, ev) {
       this.$store.commit("changeArrVal", {k: "curRans", v: ev.target.value, idx: [this.actCtrlIdx, i]})
-    }
+      this.rRangeVal(this.actDid, this.curName)
+    }),
+    rRangeVal (did, user) {
+      fetch(`/api/ctrl/rangeVal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+          did,ranArr:this.curRans[this.actCtrlIdx],user
+        })      
+      })
+      .then(res => res.json()
+      .then(data => {}))      
+    },
+    /* 发送会话 */
+    sendMsg: throttle(function () {
+      if (getTextLen(this.msg) <= 20) {
+        fetch('/api/ctrl/pubMsgW', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+          },
+          body: JSON.stringify({
+            did:this.actDid, msgW:this.msg, user:this.curName
+          })
+        })
+        .then(res => res.json()
+        .then(data => {}))
+      } else alert('发送会话内容不得超过20字节')  
+    })
   },
   created () {
     this.$clearTim()
