@@ -5,6 +5,7 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
+    dataResetOk: 0,
     curName: "", curMail: "", curAvatar: 0, curAuth: Number, curAuthDate: "",
     curDevs: [],
     /* tim0-3 ~ data tim4 ~ graph tim5 ~ msg */
@@ -17,13 +18,30 @@ const store = new Vuex.Store({
     dataState: [],
     /* 每个设备每种数据的图表缓存数值 */
     graCache: [],
-    /* 数据页激活设备索引 */
-    actIdx: Number
+    /* 激活Tag索引 */
+    curActCtrlIdx: 0, actIdx: Number
   },
   mutations: {
     changeVal (state, pl) {
-      // console.log(pl)
       state[pl.k] = pl.v
+    },
+    changeBtnVal (state, pl) {
+      Vue.set(state[pl.k][pl.i], pl.j, state[pl.k][pl.i][pl.j]?0:1)
+    },
+    changeArrVal (state, pl) {
+      let {k, v, idx} = pl
+      let l = idx.length
+      switch (l) {
+        case 1:
+          Vue.set(state[k], idx[0], v)
+          break
+        case 2:
+          Vue.set(state[k][idx[0]], idx[1], v)
+          break
+        case 3:
+          Vue.set(state[k][idx[0]][idx[1]], idx[2], v)
+          break
+      }
     },
     resetDevState (state) {
       for(let i in state.curDevs) {
@@ -32,6 +50,7 @@ const store = new Vuex.Store({
         state.timData.push(Array(8))
         state.dataState.push(Array(9).fill(0).concat(-1))
         state.graCache.push(Array(9).fill(0).map(e => Array()))
+        state.dataResetOk = 1
       }
     },
     addNewDev (state) {
@@ -50,10 +69,7 @@ const store = new Vuex.Store({
       state.timData.splice(idx, 1)
       state.dataState.splice(idx, 1)
       state.graCache.splice(idx, 1)      
-    }
-  },
-  actions: {
-
+    },
   }
 })
 

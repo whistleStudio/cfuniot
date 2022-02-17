@@ -48,7 +48,16 @@ export default {
   created () {
     this.rGetUserInfo()
     this.rGetDevInfoReset()
-  }
+    // console.log('user created')
+    /* 子页面刷新回到父级页面 */
+    // if (this.$route.path.match(/\/user\/.+/)) {
+    //   this.$router.push("/user")
+    // }
+    // window.onbeforeunload= e => {
+    //   return "关闭提示"
+    // }
+  },
+
 }
 </script>
 

@@ -5,7 +5,8 @@ module.exports = {
         "assets": "@/assets",
         "views": "@/views",
         "img": "@/assets/img",
-        "components": "@/components"
+        "components": "@/components",
+        "utils": "@/utils"
       }
     },
     devServer: {

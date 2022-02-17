@@ -21,6 +21,8 @@ router.beforeEach((to, from, next) => {
     next("/login")
     alert("token失效, 请重新登录")
   }
+
+
 })
 
 export default router

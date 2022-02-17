@@ -1,23 +1,27 @@
 <template>
-  <div id='u1-box'>
+  <div id='u1-box' v-if="this.$store.state.dataResetOk">
     <div id='tag'>
       <ul class="nav nav-tabs">
-        <li v-for="(v,i) in curDevs" :key="i" class="nav-item">
-          <a class="nav-link"  href="#">{{v.name}}</a>
+        <li v-for="(v,i) in curDevs" :key="i"  @click="changeTag(i)" class="nav-item">
+          <a :class="{active: actCtrlIdx===i}" class="nav-link" href="#">{{v.name}}</a>
         </li>
       </ul>
     </div>
     <div id='controller' >
       <div></div>
       <div class="input-group mb-3" id='sendMsgW'>
-        <button class="btn btn-outline-primary" type="button" id="button-addon1">发送会话</button>
-        <input type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
+        <button :disabled="!haveDev" class="btn btn-outline-primary" type="button" id="button-addon1">发送会话</button>
+        <input :disabled="!haveDev" type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
       </div>
       <div id="controlNum">
-        <button v-for="(v,i) in btns" :key="i" type="button" class="btn btn-outline-primary">{{v}}</button>
+        <button v-for="(v,i) in btns" :key="i" @click="btnClick(i)"
+        :disabled="!haveDev" :class="{active: curBtns[actCtrlIdx][i]}"
+        type="button" class="btn btn-outline-primary">{{v}}</button>
         <div v-for="(v,i) in Array(4)" :key="i+10" class="controller-range">
-          <label :for="`customRange${i+1}`" class="form-label">滑杆{{i+1}}&nbsp;&nbsp;&nbsp;<span>[ 0 ]</span></label>
-          <input type="range" class="form-range" :id="`customRange${i+1}`" min="0" max='100' value="0">
+          <label :for="`customRange${i+1}`" class="form-label">滑杆{{i+1}}&nbsp;&nbsp;&nbsp;<span>[ {{curRans[actCtrlIdx][i]}} ]</span></label>
+          <input :disabled="!haveDev" :id="`customRange${i+1}`" 
+          :value="curRans[actCtrlIdx][i]" @change="changeRan(i, $event)"
+          type="range" class="form-range" min="0" max='100' >
         </div>
       </div>
     </div>
@@ -27,23 +31,41 @@
 
 <script>
 import PComment from "components/private/PComment"
-
+import throttle from "utils/throttle"
 export default {
   data () {
     return {
       btns: ["按钮A", "按钮B", "按钮C", "按钮D"],
-  
     }
   },
   computed : {
     curDevs: function () {return this.$store.state.curDevs},
+    curBtns: function () {return this.$store.state.curBtns},
+    curRans: function () {return this.$store.state.curRans},
+    actDid: function () {return this.$store.state.curDevs[actCtrlIdx].did},
+    haveDev: function () {return this.$store.state.curDevs.length},
+    actCtrlIdx: function () {
+      return this.$store.state.curActCtrlIdx}
   },
   components: {
     "p-comment": PComment
   },
+  methods: {
+    changeTag (i) {
+      this.$store.commit("changeVal", {k: "curActCtrlIdx", v: i})
+    },
+    btnClick: throttle(function (i){
+      this.$store.commit("changeBtnVal", {k: "curBtns", i: this.actCtrlIdx, j: i})
+    }),
+
+    changeRan (i, ev) {
+      this.$store.commit("changeArrVal", {k: "curRans", v: ev.target.value, idx: [this.actCtrlIdx, i]})
+    }
+  },
   created () {
-    this.clearTim()
-  }
+    this.$clearTim()
+  },
+
 }
 </script>
 
