@@ -14,19 +14,19 @@ const store = new Vuex.Store({
     curBtns: [], curRans: [],
     /* 数据监控更新计时器 */
     timData: [],
-    /* 数据监控开关状态记录 idx0-3数据A-C idx末激活图表 */
+    /* 数据监控开关状态记录 idx0-3数据A-C idx4-7数据D-G idx8会话框 idx9对应激活图表 */
     dataState: [],
     /* 每个设备每种数据的图表缓存数值 */
     graCache: [],
     /* 激活Tag索引 */
-    curActCtrlIdx: 0, actIdx: Number
+    curActCtrlIdx: 0, curActDataIdx: 0, actIdx: Number
   },
   mutations: {
     changeVal (state, pl) {
       state[pl.k] = pl.v
     },
-    changeBtnVal (state, pl) {
-      Vue.set(state[pl.k][pl.i], pl.j, state[pl.k][pl.i][pl.j]?0:1)
+    changeBtnVal (state, {k,i,j}) {
+      Vue.set(state[k][i], j, state[k][i][j]?0:1)
     },
     changeArrVal (state, pl) {
       let {k, v, idx} = pl

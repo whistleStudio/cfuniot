@@ -31,9 +31,12 @@ rt.post('/reqMsg', (req, res) => {
 rt.get('/devNote', (req, res) => {
   let user = req.userx.name
   let {did} = req.query
+  console.log(did)
   Device.findOne({user, did}, (err, doc) => {
-    if (!err) res.json({err:0, val:doc.comment})
-    else res.json({err:5})
+    if (!err&&doc) res.json({err:0, val:doc.comment})
+    else {
+      console.log(new Date(), err, doc)
+      res.json({err:5})}
   })
 })
 

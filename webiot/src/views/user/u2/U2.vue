@@ -1,9 +1,10 @@
 <template>
-  <div id='u2-box'>    
+  <div id='u2-box' v-if="$store.state.dataResetOk">    
     <div id='tag'>
       <ul class="nav nav-tabs">
-        <li class="nav-item" >
-        <a class="nav-link active" aria-current="page" href="#">设备1</a>
+        <li v-for="(v,i) in curDevs" :key="i" @click="changeTag(i)" class="nav-item" >
+        <a :class="{active: actDataIdx==i}" 
+        class="nav-link" aria-current="page" href="#">{{v.name}}</a>
         </li>
       </ul>
     </div> 
@@ -12,7 +13,8 @@
       <div id="getMsg" style="margin-top:50px; display: flex;">
         <div class="form-check form-switch">
           <label class="form-check-label" for="flexSwitchCheckDefault4">会话监听</label>
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault4">
+          <input @click="toggleDataBtn(8)" :checked="dataState[actDataIdx][8]" :disabled="!haveDev"
+          class="form-check-input" type="checkbox" id="flexSwitchCheckDefault4">
         </div>
         <div>
         
@@ -24,27 +26,26 @@
           <div v-for="(v, i) in Array(4)" :key="i" class="infoData">
             <div class="form-check form-switch">
               <label class="form-check-label" :for="`flexSwitchCheckDefault${i}`">数据{{String.fromCharCode(65+i)}}</label>
-              <input class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i}`">
+              <input @click="toggleDataBtn(i)" :checked="dataState[actDataIdx][i]" :disabled="!haveDev"
+              class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i}`">
             </div>
-            <div>
-              
-            </div>
+            <div></div>
           </div>
         </div>
         <div id="Cnum2">
-          <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCnum" aria-expanded="false" aria-controls="collapseExample">
-            +
+          <button @click="collapseFlag=!collapseFlag" 
+          class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCnum" aria-expanded="false" aria-controls="collapseExample">
+            {{collapseFlag?"+":"-"}}
           </button>
           <div class="collapse" id="collapseCnum">
             <div>
               <div v-for="(v, i) in Array(4)" :key="i" class="infoData">
                 <div class="form-check form-switch">
                   <label class="form-check-label" :for="`flexSwitchCheckDefault${i+4}`">数据{{String.fromCharCode(69+i)}}</label>
-                  <input class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i+4}`">
+                  <input @click="toggleDataBtn(i+4)" :checked="dataState[actDataIdx][i+4]" :disabled="!haveDev"
+                  class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i+4}`">
                 </div>
-                <div>
-                  
-                </div>
+                <div></div>
               </div>
             </div>    
           </div>
@@ -57,7 +58,8 @@
           <div id='graphCheck' style="float: left;">
             <div>
               <div v-for="(v, i) in Array(8)" :key="i" class="form-check-inline graph-radio align-middle">
-                <input class="form-check-input" type="radio" name="gra" :id="`flexCheckDefault${i+1}`">
+                <input :id="`flexCheckDefault${i+1}`" :disabled="!haveDev"
+                class="form-check-input" type="radio" name="gra">
                 <label class="form-check-label" :for="`flexCheckDefault${i+1}`">
                 {{String.fromCharCode(65+i)}}
                 </label>
@@ -75,12 +77,14 @@
       </div>
     </div>
 
-    <p-comment></p-comment>
+    <p-comment :c_actDid="actDid" />
   </div>
 </template>
 
 <script>
 import PComment from "components/private/PComment"
+import getTextLen from "utils/getTextLen"
+import dateFormat from "utils/dateFormat"
 
 export default {
   data () {
@@ -89,11 +93,36 @@ export default {
         {id: "psGraph", img: "play0.png"},
         {id: "clearGraph", img: "clear.png"},
         {id: "excelGraph", img: "excel.png"}
-      ]
+      ],
+      collapseFlag: 1
     }
+  },
+  computed: {
+    curName: function () {return this.$store.state.curName},
+    curDevs: function () {return this.$store.state.curDevs},
+    dataState: function () {return this.$store.state.dataState},
+    actDid: function () {return this.$store.state.curDevs[this.$store.state.curActDataIdx].did},
+    haveDev: function () {return this.$store.state.curDevs.length},
+    actDataIdx: function () {return this.$store.state.curActDataIdx}    
   },
   components: {
     "p-comment": PComment
+  },
+  methods: {
+    /* 切换设备标签页 */
+    changeTag (i) {
+      this.$store.commit("changeVal", {k: "curActDataIdx", v: i})
+    },
+    toggleDataBtn (i) {
+      this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
+    }    
+  },
+  created () {
+    this.$clearTim()
+    console.log("u2 created")
+  },
+  mounted () {
+    dateFormat ()
   }
 }
 </script>
@@ -206,9 +235,6 @@ export default {
 #graph {
   padding: 20px;
 }
-
-
-
 
 #psGraph:hover, #clearGraph:hover, #excelGraph:hover {
   box-shadow: 1px 1px 2px 1px gray inset;

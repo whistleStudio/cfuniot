@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const deviceSchema = new mongoose.Schema({
   user: String,
   name: String,
-  did: String,
+  did: Number,
   Cnum1: {type:Array, default:[0, 0, 0, 0]},
   Cnum2: {type:Array, default:[0, 0, 0, 0]}, 
   Cmsg: {type: String, default: 'hello cfunworld'},

@@ -7,7 +7,7 @@ exports.setToken = function(username,userid){
 			name:username,
 			_id:userid,
 			cert: true
-		},signkey,{ expiresIn:'3h', algorithm: 'HS256'});
+		},signkey,{ expiresIn:'24h', algorithm: 'HS256'});
 		resolve(token);
 	})
 }

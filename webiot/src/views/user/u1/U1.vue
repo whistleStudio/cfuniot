@@ -26,7 +26,7 @@
         </div>
       </div>
     </div>
-    <p-comment></p-comment>
+    <p-comment :c_actDid="actDid" />
   </div>
 </template>
 
@@ -48,8 +48,7 @@ export default {
     curRans: function () {return this.$store.state.curRans},
     actDid: function () {return this.$store.state.curDevs[this.$store.state.curActCtrlIdx].did},
     haveDev: function () {return this.$store.state.curDevs.length},
-    actCtrlIdx: function () {
-      return this.$store.state.curActCtrlIdx}
+    actCtrlIdx: function () {return this.$store.state.curActCtrlIdx}
   },
   components: {
     "p-comment": PComment
@@ -116,8 +115,7 @@ export default {
   },
   created () {
     this.$clearTim()
-  },
-
+  }
 }
 </script>
 
@@ -163,8 +161,4 @@ export default {
 .controller-range span {
   color: rgb(61, 141, 233);
 }
-
-
-
-
 </style>

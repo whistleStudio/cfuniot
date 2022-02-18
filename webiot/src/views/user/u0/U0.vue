@@ -137,6 +137,7 @@ export default {
         .then(res => res.json()
         .then(data => {
           this.$store.commit("changeVal", {k:"curDevs", v:data.data})
+          console.log(data.data)
           resolve()
         }))
         .catch(e => reject())

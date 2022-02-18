@@ -6,27 +6,33 @@
       <div></div>
       <div></div>
     </div>
-    <div @click="noteActive" id='note-content' :class="{'init-content': clickFlag}">
+    <div @click="noteClick" id='note-content' 
+    :class="{'init-content': !clickFlag, 'pop-content': clickFlag==1, 'back-content': clickFlag==2}">
       <div id="note-tab">
         <ul>
-          <li v-for="(v, i) in commentIcons" :key="i" :id="v.id">
-            <a v-if="i === 1" :href="v.link"><img :src="require(`img/comment/${v.img}`)" alt=""></a> 
+          <li v-for="(v, i) in commentIcons" :key="i" :id="v.id" @click.stop="iconClick(i)">
+            <a v-if="i === 1" :href="v.link" target="_blank"><img :src="require(`img/comment/${v.img}`)" alt=""></a> 
             <img v-else :src="require(`img/comment/${v.img}`)" alt="">
           </li>
-          <!-- <li id="noteHelp"> <a href="https://markdown.com.cn/basic-syntax/" target="_blank"><img src="/public/pic/noteCtrl3.png" alt=""></a> </li>
-          <li id="noteMini"> <img src="/public/pic/noteCtrl4.png" alt=""> </li> -->
         </ul>
       </div>
-      <div id='note-textarea' class="mb-3 hide">
-        <textarea class="form-control form-control-lg" id="textarea1" rows="17"></textarea>
-        <div id='note-count'> <span>1</span> 字节</div>
+      <div v-show="!commentMode" id='note-textarea' class="mb-3">
+        <textarea  v-model="comment" 
+        class="form-control form-control-lg" id="textarea1" rows="17"></textarea>
+        <div id='note-count'> <span>{{charCount}}</span> 字节</div>
       </div>
-      <div id='note-md' class="text-wrap text-break">comment refreshing...</div>
+      <div v-show="commentMode" id='note-md' class="text-wrap text-break">
+        <span v-html="commentMd"></span>
+        <span v-if="!comment">comment refreshing...</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+  import {marked} from "marked"
+  import getTextLen from "utils/getTextLen"
+
   export default {
     data () {
       return {
@@ -35,32 +41,83 @@
           {id: "noteHelp", img: "noteCtrl3.png", link: "https://markdown.com.cn/basic-syntax/"},
           {id: "noteMini", img: "noteCtrl4.png"}
         ],
-        clickFlag: 1,
+        //0-收，1-缓出，2-缓进
+        clickFlag: 0,
         commentMode: 1,
-        comment: ""
+        comment: "", 
       };
     },
     props: {
       c_actDid: Number,
     },
-    components: {},
+    computed: {
+      commentMd: function () {return marked.parse(this.comment)},
+      charCount: function () {return getTextLen(this.comment)}
+    },
     methods: {
-      noteActive (ev) {
-        let step = 10, pos = -460
-        if (this.clickFlag) {
-          this.clickFlag = 0
-          // $note.removeClass('init-content')
-          let tim = setInterval(() => {
-            // 有问题....
-            ev.target.style.setProperty('right', `${pos}px`, 'important')
-            // ev.target.style.right = pos+'px'
-            console.log(ev.target)
-            if (pos < 10) pos += step
-            else clearInterval(tim)
-          }, 100)
-        }        
+      noteClick () {
+        this.clickFlag = 1
+      },
+      iconClick (i) {
+        switch (i) {
+          case 0:
+            this.commentMode = !this.commentMode
+            if (this.commentMode) {
+              this.rChangeNote(this.c_actDid)
+              this.commentIcons[0].img = "noteCtrl1.png"
+            } else {
+              this.commentIcons[0].img = "noteCtrl2.png"
+            } 
+            break
+          case 2:
+            this.clickFlag = 2
+            setTimeout(()=>{this.clickFlag = 0}, 600)
+            break
+          default:
+            break
+        }
+      },
+      /* 请求注释内容 */
+      rReqNote () {
+        fetch(`/api/data/devNote?did=${this.c_actDid}`)
+        .then(r => r.json()
+        .then(data => {
+          this.comment = data.val
+        }))
+      },
+      /* 更新注释内容 */
+      rChangeNote (did) {
+        fetch(`/api/data/changeNote`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+          },
+          body: JSON.stringify({
+            did, comment:this.comment
+          })
+        })
+        .then(res => res.json()
+        .then(data => {}))        
+      },
+    },
+    created () {
+      this.rReqNote()
+    },
+    beforeDestroy () {
+      this.rChangeNote(this.c_actDid)
+    },
+    watch: {
+      c_actDid (newVal, preVal) {
+        this.clickFlag = 0
+        this.commentMode = 1
+        ;(async () => {
+          try {
+            await this.rChangeNote(preVal)
+            await this.rReqNote() 
+          } catch (e) {console.log(e)}
+        })()     
       }
-    }
+    } 
   }
 </script>
 
@@ -68,9 +125,10 @@
 #comment {
   width: 515px;
   height: 620px;
-  margin-top: 30px;
-  float: right;
-  position: relative;
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   overflow: hidden;
 }
 #note-btn {
@@ -106,20 +164,23 @@
   width: 500px;
   height: 600px;
   overflow: hidden;
-  /* cursor: pointer; */
 }
 .init-content {
   right: -480px;
   cursor: pointer;
 }
+.pop-content {
+  animation: popNote 0.6s forwards;
+}
+.back-content {
+  animation: backNote 0.6s forwards;
+}
 #note-tab {
   margin-top: 10px;
   width: 100%;
   height: 25px;
-  /* background-color: red; */
 }
 #note-tab>ul {
-  /* width: 100px; */
   margin-right: 10px;
   float: right;
 }
@@ -127,7 +188,6 @@
   display: inline-block;
   width: 35px;
   height: 25px;
-  /* background-color: pink; */
   cursor: pointer;
   margin-left: 10px;
 }
@@ -136,17 +196,12 @@
   height: 25px;
 }
 #note-textarea {
-  /* margin-top: 5px !important; */
   margin-left: 10px;
   width: 480px;
-  /* height: 550px; */
 }
 #note-md {
   padding: 10px;
   overflow-y: auto;
-  /* overflow: scroll;
-  overflow-y: auto;
-  overflow-x: none; */
   width: 490px;
   height: 560px;
 }
@@ -162,11 +217,19 @@
 }
 
 .init-content:hover {
-  animation: hovernote 1s ease forwards;
+  animation: hoverNote 1s ease forwards;
 }
 
-@keyframes hovernote {
+@keyframes hoverNote {
   from {right: -480px;}
   to {right: -440px;}
+}
+@keyframes popNote {
+  from {right: -460px;}
+  to {right: 10px;}
+}
+@keyframes backNote {
+  from {right: 10px;}
+  to {right: -480px;}
 }
 </style>
