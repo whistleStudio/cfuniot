@@ -10,7 +10,7 @@ rt.post('/reqData', (req, res) => {
   let {did, i} = req.body
   // let datax = `data${i}`
   Device.findOne({user, did}, (err, doc) => {
-    if(!err) {
+    if(!err&&doc) {
       if (i < 4) res.json({err:0, val:doc.Cnum1})
       else res.json({err:0, val:doc.Cnum2})
     }
@@ -21,9 +21,8 @@ rt.post('/reqData', (req, res) => {
 rt.post('/reqMsg', (req, res) => {
   let user = req.userx.name
   let {did} = req.body
-  // let datax = `data${i}`
   Device.findOne({user, did}, (err, doc) => {
-    if(!err) res.json({err:0, val:doc.Cmsg})
+    if(!err&&doc) res.json({err:0, val:doc.Cmsg})
     else res.json({err:1})
   })
 })
@@ -31,7 +30,6 @@ rt.post('/reqMsg', (req, res) => {
 rt.get('/devNote', (req, res) => {
   let user = req.userx.name
   let {did} = req.query
-  console.log(did)
   Device.findOne({user, did}, (err, doc) => {
     if (!err&&doc) res.json({err:0, val:doc.comment})
     else {
@@ -44,7 +42,7 @@ rt.post('/changeNote', (req, res) => {
   let user = req.userx.name
   let {did, comment} = req.body
   Device.updateOne({user, did}, {comment}, (err, q) => {
-    if (!err) {
+    if (!err&&q) {
       if (q.modifiedCount > 0) res.json({err: 0})
       else res.json({err:1})
     } else res.json({err:5})

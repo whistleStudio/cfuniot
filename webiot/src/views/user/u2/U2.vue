@@ -10,17 +10,16 @@
     </div> 
     
     <div style="float: left; margin-left: 80px;">
-      <div id="getMsg" style="margin-top:50px; display: flex;">
+      <!-- 会话监听 -->
+      <div id="getMsg" style="margin-top:50px; display: flex; align-items: center">
         <div class="form-check form-switch">
           <label class="form-check-label" for="flexSwitchCheckDefault4">会话监听</label>
-          <input @click="toggleDataBtn(8)" :checked="dataState[actDataIdx][8]" :disabled="!haveDev"
+          <input @click="toggleMsgBtn()" :checked="dataState[actDataIdx][8]" :disabled="!haveDev"
           class="form-check-input" type="checkbox" id="flexSwitchCheckDefault4">
         </div>
-        <div>
-        
-        </div>
+        <div><span v-show="dataState[actDataIdx][8]">{{msg}}</span></div>
       </div>
-    
+      <!-- 数据框监听 -->
       <div id="getData">
         <div id='Cnum1'>
           <div v-for="(v, i) in Array(4)" :key="i" class="infoData">
@@ -51,14 +50,14 @@
           </div>
         </div>
       </div>
-     
+      <!-- 图表显示 -->
       <div id="graphData">
         <span>折线图</span>
         <div>
           <div id='graphCheck' style="float: left;">
             <div>
               <div v-for="(v, i) in Array(8)" :key="i" class="form-check-inline graph-radio align-middle">
-                <input :id="`flexCheckDefault${i+1}`" :disabled="!haveDev"
+                <input :id="`flexCheckDefault${i+1}`" :disabled="!haveDev" :checked="dataState[actDataIdx][9]==i" @click="toggleGraBtn(i)"
                 class="form-check-input" type="radio" name="gra">
                 <label class="form-check-label" :for="`flexCheckDefault${i+1}`">
                 {{String.fromCharCode(65+i)}}
@@ -67,7 +66,7 @@
             </div>
           </div>
           <div id='graphCtrl' style="float: right;">
-            <div v-for="(v, i) in graCtrls" :key="i" :id="v.id" 
+            <div v-for="(v, i) in graCtrls" :key="i" :id="v.id" @click="graIconClick(i)"
             class="align-middle bgWhite" :style="{backgroundImage: `url(${require('img/u2/'+v.img)})`}">
               <a v-if="i===1" class="disabledA"><span></span></a>
             </div>
@@ -89,19 +88,25 @@ import dateFormat from "utils/dateFormat"
 export default {
   data () {
     return {
-      graCtrls: [
-        {id: "psGraph", img: "play0.png"},
-        {id: "clearGraph", img: "clear.png"},
-        {id: "excelGraph", img: "excel.png"}
-      ],
-      collapseFlag: 1
+      collapseFlag: 1,
+      graShowFlag: 0,
+      msg: "wait message..."
     }
   },
   computed: {
+    graCtrls: function () {
+      return [
+        {id: "psGraph", img: `play${this.graShowFlag}.png`},
+        {id: "clearGraph", img: "clear.png"},
+        {id: "excelGraph", img: "excel.png"}
+      ]
+    },
     curName: function () {return this.$store.state.curName},
     curDevs: function () {return this.$store.state.curDevs},
     dataState: function () {return this.$store.state.dataState},
     actDid: function () {return this.$store.state.curDevs[this.$store.state.curActDataIdx].did},
+    timGra: function () {return this.$store.state.timGra},
+    timData: function () {return this.$store.state.timData},
     haveDev: function () {return this.$store.state.curDevs.length},
     actDataIdx: function () {return this.$store.state.curActDataIdx}    
   },
@@ -112,10 +117,53 @@ export default {
     /* 切换设备标签页 */
     changeTag (i) {
       this.$store.commit("changeVal", {k: "curActDataIdx", v: i})
+      this.graShowFlag = 0
     },
     toggleDataBtn (i) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
-    }    
+    },
+    toggleGraBtn (i) {
+      this.$store.commit("changeArrVal", {k:"dataState", v:i, idx:[this.actDataIdx,9]})
+    },
+    toggleMsgBtn () {
+      this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: 8})
+      if (this.dataState[this.actDataIdx][8]) {
+        let t = setInterval(() => {
+          this.rReqMsg(this.actDid)
+          console.log('reqMsg')
+        }, 1000)
+        this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,8]})
+      } else {
+        if (this.timData[this.actDataIdx][8]) clearInterval(this.timData[this.actDataIdx][8])
+      }
+    },
+    graIconClick (i) {
+      switch (i) {
+        case 0:
+          this.graShowFlag = Number(!this.graShowFlag)
+          // this.graCtrls[0].img = `play${this.graShowFlag}.png`
+          break
+        case 1:
+          break
+        case 2:
+          break
+      }
+    },
+    rReqMsg (did) {
+      fetch('/api/data/reqMsg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+          did
+        })
+      })
+      .then(res => res.json()
+      .then(data => {
+        this.msg = data.val
+      }))            
+    },
   },
   created () {
     this.$clearTim()
@@ -188,13 +236,15 @@ export default {
   text-align: center;
 }
 #getMsg div:last-of-type {
+  text-indent: 1rem;
   margin-left: 30px;
   width: 880px;
   height: 40px;
   background-color: rgba(255,255,255,0.8);
   border: 2px solid rgba(158, 234, 249, 0.5);
+  box-sizing: border-box;
   border-radius: 10px;
-  font: 20px/40px sans-serif;
+  font: 20px/35px sans-serif;
 }
 #graphData>div:first-of-type {
   width: 1000px;

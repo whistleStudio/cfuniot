@@ -6,9 +6,7 @@ import store from "@/store"
 Vue.config.productionTip = false
 /* 计时器归零 */
 Vue.prototype.$clearTim = function () {
-  store.state.tim.forEach(e => {
-    clearInterval(e)
-  });
+  clearInterval(store.state.timGra)
 }
 Vue.prototype.$th = function (fn) {return ()=>{fn()}}
 /* 节流 */

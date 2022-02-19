@@ -25,3 +25,5 @@ u1 curDevs clearTim
 *问题* changeArrVal是否要分开写 提高效率?还有待商榷
 [02180957] comment缓慢弹出用了 vue处理css animation的方法, 其实就是定义一个类，然后需要执行的时候让绑定的类值为true就行了**blog**
 [02181730] 组件PComment ✔ watch属性体验不错，由数据变化需要触发的方法可以使用，需要注意newVal preVal; utils:dateFormat;u2 按钮开关和state同步, 还差图表按钮; 记得修改server tokenVerify expireTime
+[02191256] 关于@绑定事件（利用闭包）view更新不会创建新的作用域; 测试OK 不刷新的话，主页面切换计时器有持续性
+*问题* 后台提高鲁棒性，请求数据库文档时 判断条件!err&&doc
