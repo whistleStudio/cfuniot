@@ -28,7 +28,7 @@
               <input @click="toggleDataBtn(i)" :checked="dataState[actDataIdx][i]" :disabled="!haveDev"
               class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i}`">
             </div>
-            <div></div>
+            <div><span v-show="dataState[actDataIdx][i]">{{pageData[i]}}</span></div>
           </div>
         </div>
         <div id="Cnum2">
@@ -44,7 +44,7 @@
                   <input @click="toggleDataBtn(i+4)" :checked="dataState[actDataIdx][i+4]" :disabled="!haveDev"
                   class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i+4}`">
                 </div>
-                <div></div>
+                <div><span v-show="dataState[actDataIdx][i+4]">{{pageData[i+4]}}</span></div>
               </div>
             </div>    
           </div>
@@ -90,7 +90,8 @@ export default {
     return {
       collapseFlag: 1,
       graShowFlag: 0,
-      msg: "wait message..."
+      msg: "wait message...",
+      pageData: Array(8).fill('NaN')
     }
   },
   computed: {
@@ -108,7 +109,8 @@ export default {
     timGra: function () {return this.$store.state.timGra},
     timData: function () {return this.$store.state.timData},
     haveDev: function () {return this.$store.state.curDevs.length},
-    actDataIdx: function () {return this.$store.state.curActDataIdx}    
+    actDataIdx: function () {return this.$store.state.curActDataIdx},
+    graCache: function () {return this.$store.state.graCache}    
   },
   components: {
     "p-comment": PComment
@@ -121,6 +123,14 @@ export default {
     },
     toggleDataBtn (i) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
+      if (this.dataState[this.actDataIdx][i]) {
+        let t = setInterval(() => {
+          this.rReqData(this.actDid, i)
+        }, 1000)
+        this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,i]})
+      } else {
+        if (this.timData[this.actDataIdx][i]) clearInterval(this.timData[this.actDataIdx][i])
+      }
     },
     toggleGraBtn (i) {
       this.$store.commit("changeArrVal", {k:"dataState", v:i, idx:[this.actDataIdx,9]})
@@ -130,7 +140,7 @@ export default {
       if (this.dataState[this.actDataIdx][8]) {
         let t = setInterval(() => {
           this.rReqMsg(this.actDid)
-          console.log('reqMsg')
+          // console.log('reqMsg')
         }, 1000)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,8]})
       } else {
@@ -164,6 +174,30 @@ export default {
         this.msg = data.val
       }))            
     },
+    rReqData (did, i) {
+      fetch(`/api/data/reqData`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+          did,i
+        })
+      })
+      .then(res => res.json()
+      .then(data => {
+        let num
+        if (i < 4) num = data.val[i]
+        else num = data.val[i-4]
+        console.log(num)
+        if (!isNaN(num)) {
+          if(num%1 !== 0) num = num.toFixed(2)
+          else num = parseInt(num)
+          this.$set(this.pageData, i, num)
+          // r(num)
+        } 
+      }))
+    }
   },
   created () {
     this.$clearTim()
@@ -234,6 +268,9 @@ export default {
   border: 2px solid rgba(158, 234, 249, 0.8);
   border-radius: 10px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 #getMsg div:last-of-type {
   text-indent: 1rem;

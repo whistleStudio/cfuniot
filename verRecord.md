@@ -27,3 +27,5 @@ u1 curDevs clearTim
 [02181730] 组件PComment ✔ watch属性体验不错，由数据变化需要触发的方法可以使用，需要注意newVal preVal; utils:dateFormat;u2 按钮开关和state同步, 还差图表按钮; 记得修改server tokenVerify expireTime
 [02191256] 关于@绑定事件（利用闭包）view更新不会创建新的作用域; 测试OK 不刷新的话，主页面切换计时器有持续性
 *问题* 后台提高鲁棒性，请求数据库文档时 判断条件!err&&doc
+[02201111] dataShow ✔
+*问题* data,msg逻辑有重复 考虑代码复用
