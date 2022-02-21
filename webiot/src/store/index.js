@@ -20,6 +20,7 @@ const store = new Vuex.Store({
     dataState: [],
     /* 每个设备每种数据的图表缓存数值 */
     graCache: [],
+    pageData: [],
     /* 激活Tag索引 */
     curActCtrlIdx: 0, curActDataIdx: 0, actIdx: Number
   },

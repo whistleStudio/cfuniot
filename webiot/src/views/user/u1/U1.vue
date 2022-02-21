@@ -114,7 +114,7 @@ export default {
     })
   },
   created () {
-    this.$clearTim()
+
   }
 }
 </script>

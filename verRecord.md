@@ -31,3 +31,6 @@ u1 curDevs clearTim
 *问题* data,msg逻辑有重复 考虑代码复用
 [02211730] echart实例挂载
 *问题*  echart v-if, invalid init, 路由跳转非刷新，无法创建新的图表实例
+[02212315] u2 基本OK，还是不把图表放在v-if里面解决↑
+u2 v-if 刷新多出来一坨东西，加key 复用问题 <a href="https://segmentfault.com/q/1010000039976435">解决办法链接</a> 
+*问题* 删除设备时报错

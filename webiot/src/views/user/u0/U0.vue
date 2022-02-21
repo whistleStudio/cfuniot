@@ -278,7 +278,6 @@ export default {
   created () {
     this.rGenCode(0)
     this.rGetDevList()
-    this.$clearTim()
   }
 }
 </script>

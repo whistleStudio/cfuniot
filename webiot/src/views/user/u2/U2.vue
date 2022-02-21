@@ -1,6 +1,6 @@
 <template>
-  <div id='u2-box' v-if="$store.state.dataResetOk">    
-    <div id='tag'>
+  <div id='u2-box'>    
+    <div id='tag'  v-if="$store.state.dataResetOk" key="tag">
       <ul class="nav nav-tabs">
         <li v-for="(v,i) in curDevs" :key="i" @click="changeTag(i)" class="nav-item" >
         <a :class="{active: actDataIdx==i}" 
@@ -9,7 +9,7 @@
       </ul>
     </div> 
     
-    <div style="float: left; margin-left: 80px;">
+    <div style="margin-left: 80px;"  v-if="$store.state.dataResetOk" key="data">
       <!-- 会话监听 -->
       <div id="getMsg" style="margin-top:50px; display: flex; align-items: center">
         <div class="form-check form-switch">
@@ -28,7 +28,7 @@
               <input @click="toggleDataBtn(i)" :checked="dataState[actDataIdx][i]" :disabled="!haveDev"
               class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i}`">
             </div>
-            <div><span v-show="dataState[actDataIdx][i]">{{pageData[i]}}</span></div>
+            <div><span v-show="dataState[actDataIdx][i]">{{$store.state.pageData[i]}}</span></div>
           </div>
         </div>
         <div id="Cnum2">
@@ -44,7 +44,7 @@
                   <input @click="toggleDataBtn(i+4)" :checked="dataState[actDataIdx][i+4]" :disabled="!haveDev"
                   class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i+4}`">
                 </div>
-                <div><span v-show="dataState[actDataIdx][i+4]">{{pageData[i+4]}}</span></div>
+                <div><span v-show="dataState[actDataIdx][i+4]">{{$store.state.pageData[i+4]}}</span></div>
               </div>
             </div>    
           </div>
@@ -71,18 +71,17 @@
               <a v-if="i===1" class="disabledA"><span></span></a>
             </div>
           </div>
-        </div>
-        <div id="graph" ref="gra"></div>
+        </div> 
       </div>
     </div>
-
-    <!-- <p-comment :c_actDid="actDid" /> -->
+    <div id="graph" key="gra" ><div ref="gra"></div></div>
+    <p-comment :c_actDid="actDid" v-if="$store.state.dataResetOk"/>
   </div>
 </template>
 
 <script>
-import PComment from "components/private/PComment"
-
+// import PComment from "components/private/PComment"
+const PComment = () => import("components/private/PComment")
 
 
 
@@ -92,8 +91,9 @@ export default {
       collapseFlag: 1,
       graShowFlag: 0,
       msg: "wait message...",
-      pageData: Array(8).fill(''),
+      // pageData: Array(8).fill(''),
       myGraph: undefined,
+      timGra: 0
     }
   },
   computed: {
@@ -104,12 +104,12 @@ export default {
         {id: "excelGraph", img: "excel.png"}
       ]
     },
-    setOk: function () {return this.$store.state.dataResetOk},
+    // setOk: function () {return this.$store.state.dataResetOk},
     curDevs: function () {return this.$store.state.curDevs},
     dataState: function () {return this.$store.state.dataState},
     actDid: function () {return this.curDevs[this.$store.state.curActDataIdx].did},
     actName: function () {return this.curDevs[this.$store.state.curActDataIdx].name},
-    timGra: function () {return this.$store.state.timGra},
+    // timGra: function () {return this.$store.state.timGra},
     timData: function () {return this.$store.state.timData},
     haveDev: function () {return this.curDevs.length},
     actDataIdx: function () {return this.$store.state.curActDataIdx},
@@ -126,6 +126,13 @@ export default {
     changeTag (i) {
       this.$store.commit("changeVal", {k: "curActDataIdx", v: i})
       this.graShowFlag = 0
+      clearInterval(this.timGra)
+      if (this.dataState[this.actDataIdx][9] == -1) this.myGraph.clear()
+      else {
+        let n = this.dataState[this.actDataIdx][9]
+        let title = this.actName + "-数据" + String.fromCharCode(65+n)
+        this.drawGraph(title, this.graCache[this.actDataIdx][i]) 
+      }
     },
     toggleDataBtn (i, inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
@@ -135,14 +142,13 @@ export default {
         }, inv)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,i]})
       } else {
-        if (this.timData[this.actDataIdx][i]) clearInterval(this.timData[this.actDataIdx][i])
-        this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
+        clearInterval(this.timData[this.actDataIdx][i])
         if (i == this.dataState[this.actDataIdx][9]) {
           try {
+            clearInterval(this.timGra)
             this.myGraph.clear()
             this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
             this.graShowFlag = 0
-            clearInterval(this.timGra)
           }catch (e) {console.log(e)}
         }
       }
@@ -170,7 +176,8 @@ export default {
             let t =setInterval(()=>{  
               this.drawGraph(title, this.graCache[this.actDataIdx][i])
             },2000)
-            this.$store.commit("changeVal", {k: "timGra", v: t})
+            this.timGra = t
+            // this.$store.commit("changeVal", {k: "timGra", v: t})
           } else clearInterval(this.timGra)
           break
         case 1:
@@ -209,11 +216,12 @@ export default {
         let num
         if (i < 4) num = data.val[i]
         else num = data.val[i-4]
-        console.log(num)
+        // console.log(num)
         if (!isNaN(num)) {
           if(num%1 !== 0) num = num.toFixed(2)
           else num = parseInt(num)
-          this.$set(this.pageData, i, num)
+          // this.$set(this.pageData, i, num)
+          this.$store.commit("changeArrVal", {k:"pageData", v:num, idx:[i]})
           this.$store.commit("changeGraCache", {k: this.actDataIdx, i: i, v: num})
         } 
       }))
@@ -225,7 +233,7 @@ export default {
       this.$store.commit("changeArrVal", {k:"dataState", v:i, idx:[this.actDataIdx,9]})
       let n = this.dataState[this.actDataIdx][9]
       let title = this.actName + "-数据" + String.fromCharCode(65+n)
-      if (this.myGraph) this.drawGraph(title, this.graCache[this.actDataIdx][i])   
+      this.drawGraph(title, this.graCache[this.actDataIdx][i])   
     },    
       /* 绘制图表 */
     drawGraph (gTitle, data) {
@@ -272,22 +280,39 @@ export default {
     },
   },
   watch: {
-    setOk (newVal) {
-      if(newVal) {
-        console.log(newVal)
-        let n = 0
-        let t = setInterval(()=> {
-          this.myGraph = this.$echarts.init(this.$refs.gra)
-          if(this.myGraph) clearInterval(t)
-          if(n>10) alert("数据挂载失败，请刷新页面")
-          n++
-        },50)
-      }
-    }
+    // setOk (newVal) {
+    //   if(newVal) {
+    //     // console.log(newVal)
+    //     let n = 0
+    //     let t = setInterval(()=> {
+    //       this.myGraph = this.$echarts.init(this.$refs.gra)
+    //       if(this.myGraph) clearInterval(t)
+    //       if(n>10) alert("数据挂载失败, 请刷新页面")
+    //       n++
+    //     },50)
+    //   }
+    // }
   },
   created () {
-    this.$clearTim()
+    // console.log(this.$store.state.dataResetOk)
+    // if (this.$store.state.dataResetOk) {
+    //     let n = 0
+    //     let t = setInterval(()=> {
+    //       this.myGraph = this.$echarts.init(this.$refs.gra)
+    //       if(this.myGraph) clearInterval(t)
+    //       if(n>10) alert("数据挂载失败, 请刷新页面")
+    //       n++
+    //     },50)      
+    // }
     console.log("u2 created")
+  },
+  mounted () {
+    this.myGraph = this.$echarts.init(this.$refs.gra)
+  },
+  deactivated () {
+    console.log(this.collapseFlag)
+    clearInterval(this.timGra)
+    this.graShowFlag = 0
   }
 }
 </script>

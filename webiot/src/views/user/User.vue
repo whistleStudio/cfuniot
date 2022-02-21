@@ -7,6 +7,7 @@
   <div>
      <!-- <button @click="$store.state.curAvatar++">clll</button> -->
     <router-view/>
+    
   </div>
 </div>
 </template>
