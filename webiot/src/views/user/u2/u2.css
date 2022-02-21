@@ -1,0 +1,116 @@
+.bgWhite {
+  background: white center/cover no-repeat;
+}
+#u2-box {
+  width: 100%;
+}
+
+#tag {
+  margin-top: 20px;
+  margin-left: 80px;
+}
+#tag a {
+  color: rgb(173, 181, 189);
+}
+#tag .active {
+  color: rgb(77, 212, 172);
+  font-weight: bold;
+}
+
+
+#getData {
+  margin-top: 20px;
+}
+#Cnum1, #Cnum2>div>div {
+  display: flex;
+  align-content: center;
+}
+#Cnum2>button {
+  margin: 15px 0px; 
+  width: 160px;
+  height: 20px;
+  line-height: 10px !important;
+  font-size: 20px;
+}
+.infoData {
+  width: 250px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+}
+.infoData label, #getMsg label{
+  padding-left: 20px;
+  font: 17px/25px sans-serif;
+}
+.infoData input, #getMsg input{
+  width: 60px !important;
+  height: 25px;
+}
+.infoData>div:last-of-type {
+  margin-top: 10px;
+  width: 160px;
+  height: 50px;
+  font: 20px/50px sans-serif;
+  box-sizing: border-box;
+  background-color: rgba(255,255,255,0.8);
+  border: 2px solid rgba(158, 234, 249, 0.8);
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#getMsg div:last-of-type {
+  text-indent: 1rem;
+  margin-left: 30px;
+  width: 880px;
+  height: 40px;
+  background-color: rgba(255,255,255,0.8);
+  border: 2px solid rgba(158, 234, 249, 0.5);
+  box-sizing: border-box;
+  border-radius: 10px;
+  font: 20px/35px sans-serif;
+}
+#graphData>div:first-of-type {
+  width: 1000px;
+}
+
+#graphCheck input{
+  width: 20px;
+  height: 20px;
+}
+
+
+#psGraph, #clearGraph, #excelGraph {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px 1px gray;
+  margin-left: 10px;
+}
+
+
+.disabledA {
+  pointer-events: none;
+}
+
+#graphData {
+  margin-top: 30px;
+}
+
+#graphData>div:last-of-type {
+  margin-top: 50px;
+  width: 1000px;
+  height: 450px;
+  border: 1px solid gray;
+  border-radius: 10px;
+}
+#graph {
+  padding: 20px;
+}
+
+#psGraph:hover, #clearGraph:hover, #excelGraph:hover {
+  box-shadow: 1px 1px 2px 1px gray inset;
+}

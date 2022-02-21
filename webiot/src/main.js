@@ -2,8 +2,12 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from "@/router/index.js"
 import store from "@/store"
+import * as echarts from "echarts"
 
 Vue.config.productionTip = false
+
+Vue.prototype.$echarts = echarts
+
 /* 计时器归零 */
 Vue.prototype.$clearTim = function () {
   clearInterval(store.state.timGra)

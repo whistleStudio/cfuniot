@@ -1,7 +1,9 @@
 import Vue from "vue";
 import Vuex from "vuex"
+import dateFormat from "utils/dateFormat"
 
 Vue.use(Vuex)
+dateFormat()
 
 const store = new Vuex.Store({
   state: {
@@ -48,7 +50,7 @@ const store = new Vuex.Store({
         state.curRans.push(Array(4).fill(0))
         state.timData.push(Array(9))
         state.dataState.push(Array(9).fill(0).concat(-1))
-        state.graCache.push(Array(9).fill(0).map(e => Array()))
+        state.graCache.push(Array(8).fill(0).map(e => Array()))
         state.dataResetOk = 1
       }
     },
@@ -69,6 +71,11 @@ const store = new Vuex.Store({
       state.dataState.splice(idx, 1)
       state.graCache.splice(idx, 1)      
     },
+    changeGraCache (state, {k,i,v}) {
+      let arr =  state.graCache[k][i], curT = new Date().Format('HH:mm:ss')
+      if (arr.length >= 200) arr.shift()
+      arr.push([curT, v]) 
+    }
   }
 })
 

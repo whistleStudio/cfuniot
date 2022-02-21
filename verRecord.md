@@ -29,3 +29,5 @@ u1 curDevs clearTim
 *问题* 后台提高鲁棒性，请求数据库文档时 判断条件!err&&doc
 [02201111] dataShow ✔
 *问题* data,msg逻辑有重复 考虑代码复用
+[02211730] echart实例挂载
+*问题*  echart v-if, invalid init, 路由跳转非刷新，无法创建新的图表实例

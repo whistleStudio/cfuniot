@@ -52,12 +52,12 @@
       </div>
       <!-- 图表显示 -->
       <div id="graphData">
-        <span>折线图</span>
+        <span >折线图</span>
         <div>
           <div id='graphCheck' style="float: left;">
             <div>
               <div v-for="(v, i) in Array(8)" :key="i" class="form-check-inline graph-radio align-middle">
-                <input :id="`flexCheckDefault${i+1}`" :disabled="!haveDev" :checked="dataState[actDataIdx][9]==i" @click="toggleGraBtn(i)"
+                <input :id="`flexCheckDefault${i+1}`" :disabled="!(haveDev&&dataState[actDataIdx][i])" :checked="dataState[actDataIdx][9]==i" @click="toggleGraBtn(i)"
                 class="form-check-input" type="radio" name="gra">
                 <label class="form-check-label" :for="`flexCheckDefault${i+1}`">
                 {{String.fromCharCode(65+i)}}
@@ -65,25 +65,26 @@
               </div>
             </div>
           </div>
-          <div id='graphCtrl' style="float: right;">
+          <div v-show="dataState[actDataIdx][9]!=-1" id='graphCtrl' style="float: right;" > 
             <div v-for="(v, i) in graCtrls" :key="i" :id="v.id" @click="graIconClick(i)"
             class="align-middle bgWhite" :style="{backgroundImage: `url(${require('img/u2/'+v.img)})`}">
               <a v-if="i===1" class="disabledA"><span></span></a>
             </div>
           </div>
         </div>
-        <div id="graph"></div>
+        <div id="graph" ref="gra"></div>
       </div>
     </div>
 
-    <p-comment :c_actDid="actDid" />
+    <!-- <p-comment :c_actDid="actDid" /> -->
   </div>
 </template>
 
 <script>
 import PComment from "components/private/PComment"
-import getTextLen from "utils/getTextLen"
-import dateFormat from "utils/dateFormat"
+
+
+
 
 export default {
   data () {
@@ -91,7 +92,8 @@ export default {
       collapseFlag: 1,
       graShowFlag: 0,
       msg: "wait message...",
-      pageData: Array(8).fill('NaN')
+      pageData: Array(8).fill(''),
+      myGraph: undefined,
     }
   },
   computed: {
@@ -102,13 +104,14 @@ export default {
         {id: "excelGraph", img: "excel.png"}
       ]
     },
-    curName: function () {return this.$store.state.curName},
+    setOk: function () {return this.$store.state.dataResetOk},
     curDevs: function () {return this.$store.state.curDevs},
     dataState: function () {return this.$store.state.dataState},
-    actDid: function () {return this.$store.state.curDevs[this.$store.state.curActDataIdx].did},
+    actDid: function () {return this.curDevs[this.$store.state.curActDataIdx].did},
+    actName: function () {return this.curDevs[this.$store.state.curActDataIdx].name},
     timGra: function () {return this.$store.state.timGra},
     timData: function () {return this.$store.state.timData},
-    haveDev: function () {return this.$store.state.curDevs.length},
+    haveDev: function () {return this.curDevs.length},
     actDataIdx: function () {return this.$store.state.curActDataIdx},
     graCache: function () {return this.$store.state.graCache}    
   },
@@ -116,32 +119,41 @@ export default {
     "p-comment": PComment
   },
   methods: {
+    test () {
+      console.log('WTF')
+    },
     /* 切换设备标签页 */
     changeTag (i) {
       this.$store.commit("changeVal", {k: "curActDataIdx", v: i})
       this.graShowFlag = 0
     },
-    toggleDataBtn (i) {
+    toggleDataBtn (i, inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
       if (this.dataState[this.actDataIdx][i]) {
         let t = setInterval(() => {
           this.rReqData(this.actDid, i)
-        }, 1000)
+        }, inv)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,i]})
       } else {
         if (this.timData[this.actDataIdx][i]) clearInterval(this.timData[this.actDataIdx][i])
+        this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
+        if (i == this.dataState[this.actDataIdx][9]) {
+          try {
+            this.myGraph.clear()
+            this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
+            this.graShowFlag = 0
+            clearInterval(this.timGra)
+          }catch (e) {console.log(e)}
+        }
       }
     },
-    toggleGraBtn (i) {
-      this.$store.commit("changeArrVal", {k:"dataState", v:i, idx:[this.actDataIdx,9]})
-    },
-    toggleMsgBtn () {
+    toggleMsgBtn (inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: 8})
       if (this.dataState[this.actDataIdx][8]) {
         let t = setInterval(() => {
           this.rReqMsg(this.actDid)
           // console.log('reqMsg')
-        }, 1000)
+        }, inv)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,8]})
       } else {
         if (this.timData[this.actDataIdx][8]) clearInterval(this.timData[this.actDataIdx][8])
@@ -151,7 +163,15 @@ export default {
       switch (i) {
         case 0:
           this.graShowFlag = Number(!this.graShowFlag)
-          // this.graCtrls[0].img = `play${this.graShowFlag}.png`
+
+          if (this.graShowFlag) {
+            let n = this.dataState[this.actDataIdx][9]
+            let title = this.actName + "-数据" + String.fromCharCode(65+n)
+            let t =setInterval(()=>{  
+              this.drawGraph(title, this.graCache[this.actDataIdx][i])
+            },2000)
+            this.$store.commit("changeVal", {k: "timGra", v: t})
+          } else clearInterval(this.timGra)
           break
         case 1:
           break
@@ -194,136 +214,82 @@ export default {
           if(num%1 !== 0) num = num.toFixed(2)
           else num = parseInt(num)
           this.$set(this.pageData, i, num)
-          // r(num)
+          this.$store.commit("changeGraCache", {k: this.actDataIdx, i: i, v: num})
         } 
       }))
+    },
+
+    toggleGraBtn (i) {
+      this.graShowFlag = 0
+      if (this.timGra) clearInterval(this.timGra)  
+      this.$store.commit("changeArrVal", {k:"dataState", v:i, idx:[this.actDataIdx,9]})
+      let n = this.dataState[this.actDataIdx][9]
+      let title = this.actName + "-数据" + String.fromCharCode(65+n)
+      if (this.myGraph) this.drawGraph(title, this.graCache[this.actDataIdx][i])   
+    },    
+      /* 绘制图表 */
+    drawGraph (gTitle, data) {
+      let option
+      var dateList = data.map(function (item) {
+          return item[0];
+      });
+      var valueList = data.map(function (item) {
+          return item[1];
+      });
+
+      option = {
+        // Make gradient line here
+        visualMap: [{
+            show: false,
+            type: 'continuous',
+            seriesIndex: 0,
+            min: 0,
+            max: 400
+        }],
+        title: [{
+            left: 'center',
+            text: gTitle
+        }],
+        tooltip: {
+            trigger: 'axis'
+        },
+        xAxis: [{
+            data: dateList
+        }],
+        yAxis: [{
+        }],
+        grid: [{
+            bottom: '5%'
+        }],
+        series: [{
+            type: 'line',
+            showSymbol: false,
+            data: valueList
+        }]
+      }; 
+      // myGraph.clear()
+      option && this.myGraph.setOption(option)   
+    },
+  },
+  watch: {
+    setOk (newVal) {
+      if(newVal) {
+        console.log(newVal)
+        let n = 0
+        let t = setInterval(()=> {
+          this.myGraph = this.$echarts.init(this.$refs.gra)
+          if(this.myGraph) clearInterval(t)
+          if(n>10) alert("数据挂载失败，请刷新页面")
+          n++
+        },50)
+      }
     }
   },
   created () {
     this.$clearTim()
     console.log("u2 created")
-  },
-  mounted () {
-    dateFormat ()
   }
 }
 </script>
 
-<style scoped>
-.bgWhite {
-  background: white center/cover no-repeat;
-}
-#u2-box {
-  width: 100%;
-}
-
-#tag {
-  margin-top: 20px;
-  margin-left: 80px;
-}
-#tag a {
-  color: rgb(173, 181, 189);
-}
-#tag .active {
-  color: rgb(77, 212, 172);
-  font-weight: bold;
-}
-
-
-#getData {
-  margin-top: 20px;
-}
-#Cnum1, #Cnum2>div>div {
-  display: flex;
-  align-content: center;
-}
-#Cnum2>button {
-  margin: 15px 0px; 
-  width: 160px;
-  height: 20px;
-  line-height: 10px !important;
-  font-size: 20px;
-}
-.infoData {
-  width: 250px;
-  height: 100px;
-  display: flex;
-  flex-direction: column;
-}
-.infoData label, #getMsg label{
-  padding-left: 20px;
-  font: 17px/25px sans-serif;
-}
-.infoData input, #getMsg input{
-  width: 60px !important;
-  height: 25px;
-}
-.infoData>div:last-of-type {
-  margin-top: 10px;
-  width: 160px;
-  height: 50px;
-  font: 20px/50px sans-serif;
-  box-sizing: border-box;
-  background-color: rgba(255,255,255,0.8);
-  border: 2px solid rgba(158, 234, 249, 0.8);
-  border-radius: 10px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#getMsg div:last-of-type {
-  text-indent: 1rem;
-  margin-left: 30px;
-  width: 880px;
-  height: 40px;
-  background-color: rgba(255,255,255,0.8);
-  border: 2px solid rgba(158, 234, 249, 0.5);
-  box-sizing: border-box;
-  border-radius: 10px;
-  font: 20px/35px sans-serif;
-}
-#graphData>div:first-of-type {
-  width: 1000px;
-}
-
-#graphCheck input{
-  width: 20px;
-  height: 20px;
-}
-
-
-#psGraph, #clearGraph, #excelGraph {
-  display: inline-block;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 1px 1px 1px 1px gray;
-  margin-left: 10px;
-}
-
-
-.disabledA {
-  pointer-events: none;
-}
-
-#graphData {
-  margin-top: 30px;
-}
-
-#graphData>div:last-of-type {
-  margin-top: 50px;
-  width: 1000px;
-  height: 450px;
-  border: 1px solid gray;
-  border-radius: 10px;
-}
-#graph {
-  padding: 20px;
-}
-
-#psGraph:hover, #clearGraph:hover, #excelGraph:hover {
-  box-shadow: 1px 1px 2px 1px gray inset;
-}
-</style>
+<style scoped src="views/user/u2/u2.css"></style>

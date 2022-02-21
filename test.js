@@ -1,2 +1,8 @@
-
-console.log(typeof setInterval(()=>{},200))
+let a ={
+  b(){
+    (()=> {
+      console.log(this)
+    }) ()
+  }
+}
+console.log(Boolean({}))
