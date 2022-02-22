@@ -68,8 +68,8 @@
           <div v-show="dataState[actDataIdx][9]!=-1" id='graphCtrl' style="float: right;" > 
             <div v-for="(v, i) in graCtrls" :key="i" :id="v.id" @click="graIconClick(i)"
             class="align-middle bgWhite" :style="{backgroundImage: `url(${require('img/u2/'+v.img)})`}">
-              <a v-if="i===1" :class="{disabledA: excelInfo.disabled}"
-              :href="excelInfo.link" :download="excelInfo.name" ref="excelA"
+              <a v-if="i===2" 
+              :href="excelInfo.link"  ref="excelA" :download="excelInfo.name"
               ><span></span></a>
             </div>
           </div>
@@ -83,8 +83,7 @@
 
 <script>
 const PComment = () => import("components/private/PComment")
-// const ExcelJS = require("exceljs")
-const genWorkbook = () => import("utils/genWorkbook")
+import genWorkbook from "utils/genWorkbook"
 
 export default {
   data () {
@@ -191,24 +190,19 @@ export default {
           this.myGraph.clear()
           break
         case 2:
-          console.log("excelClick")
-          this.excelInfo.disabled = 1
+          var event = new MouseEvent("click", {bubbles:false})
           ;(async () => {
             try {
               let n = this.dataState[this.actDataIdx][9]
               let dName = `数据${String.fromCharCode(65+n)}`
               let dataName = `${this.$store.state.curName}_${this.actName}${dName}`
-              console.log("step1")
-              let workbook = genWorkbook(this.graCache[this.actDataIdx][n], dataName)
-              console.log("step2--",workbook)
+              let data = this.graCache[this.actDataIdx][n]
+              let workbook = genWorkbook(data, dataName)
               const buf = await workbook.xlsx.writeBuffer()
-              console.log(buf)
-              this.excelInfo.link = window.URL.createObjectURL(new Bolb([buf.buffer]))
-              console.log("step3")
-              this.excelInfo.name = `${dataName}_${new Date().getTime().xlsx}`
               this.excelInfo.disabled = 0
-              this.$refs.excelA.click()
-              this.excelInfo.disabled = 1
+              this.excelInfo.link = URL.createObjectURL(new Blob([buf.buffer]))
+              this.excelInfo.name = `${dataName}_${new Date().getTime()}.xlsx`
+              setTimeout(()=>{this.$refs.excelA[0].dispatchEvent(event)},100)
             } catch(e) {console.log(e)}
           })()
           break

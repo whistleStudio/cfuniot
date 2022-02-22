@@ -34,5 +34,10 @@ u1 curDevs clearTim
 [02212315] u2 基本OK，还是不把图表放在v-if里面解决↑
 u2 v-if 刷新多出来一坨东西，加key 复用问题 <a href="https://segmentfault.com/q/1010000039976435">解决办法链接</a> 
 *问题* 删除设备时报错
-[02221733] mutations内部调用getter方法, 通过commit参数传递；下次设计一定要考虑到请求的数据索引是一个是不变的ID
+[02221733] mutations内部调用getter方法, 通过commit参数传递；下次设计一定要考虑到请求的数据索引是一个是不变的ID；数据页数据规划和图表完成
 *问题* 表格writeBuffer有问题
+[02222316] excel请求完成 页面更新会需要些时间，有时可以加些延时
+```
+var event = new MouseEvent("click", {bubbles:false})
+el.dispatchEvent(event)
+```

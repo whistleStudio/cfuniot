@@ -3,7 +3,7 @@ const ExcelJS = require("exceljs")
 /* 生成表格 */
 function genWorkbook (arr, dataName) {
   let workbook = new ExcelJS.Workbook()
-  let d = new Date(), name = curName, dev = actName
+  let d = new Date()
   let sheet = workbook.addWorksheet(`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`)
   sheet.columns = [
     {header: '时间', key: 'time', width: '30'},
@@ -11,7 +11,7 @@ function genWorkbook (arr, dataName) {
   ]
   // 表格第一行第二行
   let row1 = sheet.getRow(1), row2 = sheet.getRow(2)
-  row1.values = [`${name}-${dev}${dataName}`]
+  row1.values = [`${dataName}`]
   row1.font = {size: 14, underline: 'single', bold: true, color: { argb: 'FFFFFFFF'}}
   fillColor(row1, 'FF538DD5')
   sheet.mergeCells('A1:B1')
