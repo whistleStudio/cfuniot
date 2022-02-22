@@ -38,7 +38,8 @@ export default {
   data () {
     return {
       btns: ["按钮A", "按钮B", "按钮C", "按钮D"],
-      msg: ""
+      msg: "",
+      actCtrlIdx: 0,
     }
   },
   computed : {
@@ -46,9 +47,8 @@ export default {
     curDevs: function () {return this.$store.state.curDevs},
     curBtns: function () {return this.$store.state.curBtns},
     curRans: function () {return this.$store.state.curRans},
-    actDid: function () {return this.$store.state.curDevs[this.$store.state.curActCtrlIdx].did},
+    actDid: function () {return this.$store.state.curDevs[this.actCtrlIdx].did},
     haveDev: function () {return this.$store.state.curDevs.length},
-    actCtrlIdx: function () {return this.$store.state.curActCtrlIdx}
   },
   components: {
     "p-comment": PComment
@@ -56,7 +56,7 @@ export default {
   methods: {
     /* 切换设备标签页 */
     changeTag (i) {
-      this.$store.commit("changeVal", {k: "curActCtrlIdx", v: i})
+      this.actCtrlIdx = i
     },
     /* 点击按钮 */
     btnClick: throttle(function (i){

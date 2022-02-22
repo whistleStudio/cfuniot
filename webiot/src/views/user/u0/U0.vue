@@ -219,13 +219,16 @@ export default {
     /* 删除设备 */
     delDev (i) {
       let did = this.$store.state.curDevs[i].did
-      ;(async () => {
-        try {
-          await this.rDeleteDev(did)
-          await this.rGetDevList()
-          this.$store.commit("delDev", i)
-        } catch (e) {console.log(e)}
-      })()      
+      console.log(this.allCount)
+      if (this.allCount>1) {
+        ;(async () => {
+          try {
+            await this.rDeleteDev(did)
+            await this.rGetDevList()
+            this.$store.commit("delDev", i)
+          } catch (e) {console.log(e)}
+        })()  
+      } else alert("手下留情, 这已经是你最后一个设备了")
     },
     rDeleteDev (did) {
       return new Promise((resolve, reject) => {

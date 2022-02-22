@@ -3,6 +3,7 @@ const nodemailer = require('nodemailer')
 const rt = express.Router()
 const MailV = require('../db/model/MailV')
 const User = require('../db/model/User')
+const Device = require('../db/model/Device')
 const hash = require('object-hash')
 
 
@@ -39,21 +40,25 @@ rt.get('/sendMail', (req, res) => {
 rt.post('/regSubmit', (req, res) => {
   let {name, pwd, mail, vcode} = req.body
   ;(async () => {
-    let v0 = await MailV.findOne({mail, vcode})
-    if(v0) {
-      let v1 = await User.findOne({name})
-      let v2 = await User.findOne({mail})
-      if(!(v1||v2)) {
-        await User.create({name, pwd, mail})
-        res.json({err:0, msg:'注册成功, 页面将在3秒后跳转'})
-      }
-      else res.json({err:1, msg:'用户名或邮箱已存在，请更换'})      
-    }else {
-      res.json({err:2, msg:'验证码输入错误'})
+    try {
+      let v0 = await MailV.findOne({mail, vcode})
+      if(v0) {
+        let v1 = await User.findOne({name})
+        let v2 = await User.findOne({mail})
+        if(!(v1||v2)) {
+          await User.create({name, pwd, mail})
+          await Device.create({user:mail, name:"创趣小屋", did:1})
+          res.json({err:0, msg:'注册成功, 页面将在3秒后跳转'})
+        }
+        else res.json({err:1, msg:'用户名或邮箱已存在，请更换'})      
+      }else {
+        res.json({err:2, msg:'验证码输入错误'})
+      }      
+    } catch (e) {
+      console.log(new Date(), e)
+      res.json({err:5, msg:'database error'})
     }
-  })().catch(e => {
-    res.json({err:3, msg:'database error'})
-  })
+  })()
 })
 
 rt.get('/resetPassword', (req, res) => {

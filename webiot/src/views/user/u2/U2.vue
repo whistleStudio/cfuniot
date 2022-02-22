@@ -17,7 +17,7 @@
           <input @click="toggleMsgBtn()" :checked="dataState[actDataIdx][8]" :disabled="!haveDev"
           class="form-check-input" type="checkbox" id="flexSwitchCheckDefault4">
         </div>
-        <div><span v-show="dataState[actDataIdx][8]">{{msg}}</span></div>
+        <div><span v-show="dataState[actDataIdx][8]">{{pageData[actDataIdx][8]}}</span></div>
       </div>
       <!-- 数据框监听 -->
       <div id="getData">
@@ -28,7 +28,7 @@
               <input @click="toggleDataBtn(i)" :checked="dataState[actDataIdx][i]" :disabled="!haveDev"
               class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i}`">
             </div>
-            <div><span v-show="dataState[actDataIdx][i]">{{$store.state.pageData[i]}}</span></div>
+            <div><span v-show="dataState[actDataIdx][i]">{{pageData[actDataIdx][i]}}</span></div>
           </div>
         </div>
         <div id="Cnum2">
@@ -68,7 +68,9 @@
           <div v-show="dataState[actDataIdx][9]!=-1" id='graphCtrl' style="float: right;" > 
             <div v-for="(v, i) in graCtrls" :key="i" :id="v.id" @click="graIconClick(i)"
             class="align-middle bgWhite" :style="{backgroundImage: `url(${require('img/u2/'+v.img)})`}">
-              <a v-if="i===1" class="disabledA"><span></span></a>
+              <a v-if="i===1" :class="{disabledA: excelInfo.disabled}"
+              :href="excelInfo.link" :download="excelInfo.name" ref="excelA"
+              ><span></span></a>
             </div>
           </div>
         </div> 
@@ -80,20 +82,23 @@
 </template>
 
 <script>
-// import PComment from "components/private/PComment"
 const PComment = () => import("components/private/PComment")
-
-
+// const ExcelJS = require("exceljs")
+const genWorkbook = () => import("utils/genWorkbook")
 
 export default {
   data () {
     return {
       collapseFlag: 1,
       graShowFlag: 0,
-      msg: "wait message...",
-      // pageData: Array(8).fill(''),
       myGraph: undefined,
-      timGra: 0
+      timGra: 0,
+      actDataIdx: 0,
+      excelInfo: {
+        disabled: 1,
+        name: "",
+        link: ""
+      }
     }
   },
   computed: {
@@ -104,15 +109,14 @@ export default {
         {id: "excelGraph", img: "excel.png"}
       ]
     },
-    // setOk: function () {return this.$store.state.dataResetOk},
     curDevs: function () {return this.$store.state.curDevs},
     dataState: function () {return this.$store.state.dataState},
-    actDid: function () {return this.curDevs[this.$store.state.curActDataIdx].did},
-    actName: function () {return this.curDevs[this.$store.state.curActDataIdx].name},
-    // timGra: function () {return this.$store.state.timGra},
+    actDid: function () {return this.curDevs[this.actDataIdx].did},
+    act_id: function () {return this.curDevs[this.actDataIdx]._id},
+    actName: function () {return this.curDevs[this.actDataIdx].name},
     timData: function () {return this.$store.state.timData},
     haveDev: function () {return this.curDevs.length},
-    actDataIdx: function () {return this.$store.state.curActDataIdx},
+    pageData: function () {return this.$store.state.pageData},
     graCache: function () {return this.$store.state.graCache}    
   },
   components: {
@@ -124,7 +128,7 @@ export default {
     },
     /* 切换设备标签页 */
     changeTag (i) {
-      this.$store.commit("changeVal", {k: "curActDataIdx", v: i})
+      this.actDataIdx = i
       this.graShowFlag = 0
       clearInterval(this.timGra)
       if (this.dataState[this.actDataIdx][9] == -1) this.myGraph.clear()
@@ -137,8 +141,10 @@ export default {
     toggleDataBtn (i, inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
       if (this.dataState[this.actDataIdx][i]) {
+        let act_id = this.act_id 
         let t = setInterval(() => {
-          this.rReqData(this.actDid, i)
+          // console.log(this.actDid)
+          this.rReqData(i, act_id)
         }, inv)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,i]})
       } else {
@@ -149,16 +155,17 @@ export default {
             this.myGraph.clear()
             this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
             this.graShowFlag = 0
-          }catch (e) {console.log(e)}
+          }catch (e) {console.log('fail-',e)}
         }
       }
     },
     toggleMsgBtn (inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: 8})
       if (this.dataState[this.actDataIdx][8]) {
+        let act_id = this.act_id
+        /* 待完成 */ 
         let t = setInterval(() => {
-          this.rReqMsg(this.actDid)
-          // console.log('reqMsg')
+          this.rReqMsg(act_id)
         }, inv)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,8]})
       } else {
@@ -169,7 +176,6 @@ export default {
       switch (i) {
         case 0:
           this.graShowFlag = Number(!this.graShowFlag)
-
           if (this.graShowFlag) {
             let n = this.dataState[this.actDataIdx][9]
             let title = this.actName + "-数据" + String.fromCharCode(65+n)
@@ -177,38 +183,62 @@ export default {
               this.drawGraph(title, this.graCache[this.actDataIdx][i])
             },2000)
             this.timGra = t
-            // this.$store.commit("changeVal", {k: "timGra", v: t})
           } else clearInterval(this.timGra)
           break
         case 1:
+          this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
+          clearInterval(this.timGra)
+          this.myGraph.clear()
           break
         case 2:
+          console.log("excelClick")
+          this.excelInfo.disabled = 1
+          ;(async () => {
+            try {
+              let n = this.dataState[this.actDataIdx][9]
+              let dName = `数据${String.fromCharCode(65+n)}`
+              let dataName = `${this.$store.state.curName}_${this.actName}${dName}`
+              console.log("step1")
+              let workbook = genWorkbook(this.graCache[this.actDataIdx][n], dataName)
+              console.log("step2--",workbook)
+              const buf = await workbook.xlsx.writeBuffer()
+              console.log(buf)
+              this.excelInfo.link = window.URL.createObjectURL(new Bolb([buf.buffer]))
+              console.log("step3")
+              this.excelInfo.name = `${dataName}_${new Date().getTime().xlsx}`
+              this.excelInfo.disabled = 0
+              this.$refs.excelA.click()
+              this.excelInfo.disabled = 1
+            } catch(e) {console.log(e)}
+          })()
           break
       }
     },
-    rReqMsg (did) {
+    rReqMsg (act_id) {
       fetch('/api/data/reqMsg', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
         body: JSON.stringify({
-          did
+          _id: act_id
         })
       })
       .then(res => res.json()
       .then(data => {
-        this.msg = data.val
+        let msg = data.val
+        this.$store.commit("changeMsg", {k: act_id, v: msg, l: this.$store.getters._idArr})
       }))            
     },
-    rReqData (did, i) {
+    rReqData (i, act_id) {
+      console.log("rReqData---",act_id)
       fetch(`/api/data/reqData`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
         body: JSON.stringify({
-          did,i
+          _id:act_id, i
         })
       })
       .then(res => res.json()
@@ -216,17 +246,14 @@ export default {
         let num
         if (i < 4) num = data.val[i]
         else num = data.val[i-4]
-        // console.log(num)
         if (!isNaN(num)) {
           if(num%1 !== 0) num = num.toFixed(2)
           else num = parseInt(num)
-          // this.$set(this.pageData, i, num)
-          this.$store.commit("changeArrVal", {k:"pageData", v:num, idx:[i]})
-          this.$store.commit("changeGraCache", {k: this.actDataIdx, i: i, v: num})
+          this.$store.commit("changeGraCache", {k: act_id, i: i, v: num, l: this.$store.getters._idArr})
         } 
       }))
     },
-
+ 
     toggleGraBtn (i) {
       this.graShowFlag = 0
       if (this.timGra) clearInterval(this.timGra)  
@@ -278,6 +305,7 @@ export default {
       // myGraph.clear()
       option && this.myGraph.setOption(option)   
     },
+
   },
   watch: {
     // setOk (newVal) {
@@ -294,7 +322,9 @@ export default {
     // }
   },
   created () {
+    // console.log(ExcelJS)
     // console.log(this.$store.state.dataResetOk)
+    // console.log(this.$store.state.curDevs)
     // if (this.$store.state.dataResetOk) {
     //     let n = 0
     //     let t = setInterval(()=> {
@@ -309,11 +339,10 @@ export default {
   mounted () {
     this.myGraph = this.$echarts.init(this.$refs.gra)
   },
-  deactivated () {
-    console.log(this.collapseFlag)
+  beforeDestroy () {
     clearInterval(this.timGra)
     this.graShowFlag = 0
-  }
+  },
 }
 </script>
 

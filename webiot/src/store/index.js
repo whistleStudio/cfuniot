@@ -20,11 +20,48 @@ const store = new Vuex.Store({
     dataState: [],
     /* 每个设备每种数据的图表缓存数值 */
     graCache: [],
+    /* 当前页面缓存数据 idx0-7数值idx8会话*/
     pageData: [],
-    /* 激活Tag索引 */
-    curActCtrlIdx: 0, curActDataIdx: 0, actIdx: Number
+
+  },
+  getters: {
+    _idArr: function (state) {
+      let arr = []
+      for (let v of state.curDevs) {
+        arr.push(v._id)
+      }
+      return arr
+    }
   },
   mutations: {
+    resetDevState (state) {
+      for(let i in state.curDevs) {
+        state.curBtns.push(Array(4).fill(0))
+        state.curRans.push(Array(4).fill(0))
+        state.timData.push(Array(9))
+        state.dataState.push(Array(9).fill(0).concat(-1))
+        state.graCache.push(Array(8).fill(0).map(e => Array()))
+        state.pageData.push(Array(8).fill('').concat('wait message...'))
+      }
+      state.dataResetOk = 1
+    },
+    addNewDev (state) {
+      state.curBtns.push([0,0,0,0]) 
+      state.curRans.push([0,0,0,0])
+      state.timData.push(Array(9))
+      state.dataState.push(Array(9).fill(0).concat(-1))
+      state.graCache.push(Array(8).fill(0).map(e => Array()))
+      state.pageData.push(Array(8).fill('').concat('wait message...'))
+    },
+    delDev (state, idx) {
+      state.curBtns.splice(idx, 1)
+      state.curRans.splice(idx, 1)
+      state.timData[idx].forEach(t=>clearInterval(t))
+      state.timData.splice(idx, 1)
+      state.dataState.splice(idx, 1)
+      state.graCache.splice(idx, 1)
+      state.pageData.splice(idx, 1)     
+    },
     changeVal (state, pl) {
       state[pl.k] = pl.v
     },
@@ -45,37 +82,25 @@ const store = new Vuex.Store({
           break
       }
     },
-    resetDevState (state) {
-      for(let i in state.curDevs) {
-        state.curBtns.push(Array(4).fill(0))
-        state.curRans.push(Array(4).fill(0))
-        state.timData.push(Array(9))
-        state.dataState.push(Array(9).fill(0).concat(-1))
-        state.graCache.push(Array(8).fill(0).map(e => Array()))
-        state.dataResetOk = 1
+    changeGraCache (state, {k,l,i,v}) {
+      // 在删除设备和更改did的情况下，纠正索引
+      k = l.indexOf(k)
+      if (k>=0) {
+        try {
+          let arr = state.graCache[k][i], curT = new Date().Format('HH:mm:ss')
+          if (arr.length >= 200) arr.shift()
+          arr.push([curT, v])
+          Vue.set(state.pageData[k], i, v)
+        } catch (e) {}
       }
     },
-    addNewDev (state) {
-      state.curBtns.push([0,0,0,0]) 
-      state.curRans.push([0,0,0,0])
-      state.timData.push(Array(9))
-      state.dataState.push(Array(9).fill(0).concat(-1))
-      state.graCache.push(Array(8).fill(0).map(e => Array()))
-    },
-    delDev (state, idx) {
-      state.curBtns.splice(idx, 1)
-      state.curRans.splice(idx, 1)
-      if (state.timData[idx]) {
-        clearInterval(state.timData[idx])
-      }
-      state.timData.splice(idx, 1)
-      state.dataState.splice(idx, 1)
-      state.graCache.splice(idx, 1)      
-    },
-    changeGraCache (state, {k,i,v}) {
-      let arr =  state.graCache[k][i], curT = new Date().Format('HH:mm:ss')
-      if (arr.length >= 200) arr.shift()
-      arr.push([curT, v]) 
+    changeMsg (state, {k,l,v}) {
+      k = l.indexOf(k)
+      if (k>=0) {
+        try {
+          Vue.set(state.pageData[k], 8, v)
+        } catch (e) {}
+      }      
     }
   }
 })
