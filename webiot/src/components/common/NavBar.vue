@@ -13,7 +13,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">我的信息</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button ref="closeModal" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="card" style="border: none;">
@@ -69,7 +69,7 @@
                     <label  class="col-form-label">账号安全</label>
                   </div>
                   <div class="col-9">
-                    <button type="button" class="btn btn-danger">修改密码</button>
+                    <button @click="resetPwd" type="button" class="btn btn-danger">修改密码</button>
                   </div>  
                 </div>
               </form>
@@ -118,7 +118,7 @@
 </template>
 
 <script>
-// import  "bootstrap/dist/js/bootstrap.bundle.min.js"
+
 export default {
   data () {
     return {
@@ -200,12 +200,17 @@ export default {
     // 修改密码 (待补充)
     resetPwd () {
 
+      this.$refs.closeModal.click()
+      this.$router.push("/resetPwd")
     }  
   }
 }
 </script>
 
 <style scoped>
+  .mgb-20 {
+    margin-bottom: 20px;
+  }
   #navbar {
     position: fixed;
     height: 80px;

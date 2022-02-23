@@ -41,3 +41,20 @@ u2 v-if 刷新多出来一坨东西，加key 复用问题 <a href="https://segme
 var event = new MouseEvent("click", {bubbles:false})
 el.dispatchEvent(event)
 ```
+[02231730] register页面重写, 数据集中, 清晰多了
+vue methods里面写闭包
+```
+methodName: (()=>{
+    return function (params) {
+
+    }
+})()
+```
+methods定义方法这样玩，this不是vue实例;(假设bar返回一个函数并接收一个fn参数，this.foo是一函数)
+methodName: this.foo
+methodName: bar(this.foo) 
+但这样写就是了
+methodName: fn(function () {
+    this.foo()
+})
+开始写resetPwd页面了，之前写的居然还漏了密码重置，简直了

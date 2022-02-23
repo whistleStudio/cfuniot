@@ -2,7 +2,6 @@
   <div id='rootLogin'>
     <div id='login'>
       <form >
-      <!-- <form action="./user" method='get'> -->
         <div class="mb-3">
           <label for="exampleInputEmail1" class="form-label">Email address</label>
           <input  v-model="mail" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
@@ -12,12 +11,8 @@
           <label for="exampleInputPassword1" class="form-label">Password</label>
           <input v-model="pwd" type="password" class="form-control" id="pwd">
         </div>
-        <!-- <div class="mb-3 form-check">
-          <input type="checkbox" class="form-check-input" id="exampleCheck1">
-          <label class="form-check-label" for="exampleCheck1">Check me out</label>
-        </div> -->
         <button @click.prevent="submit" id='logBtn' type="submit" class="btn btn-primary">登录</button>
-        <a href="http://localhost:8082/reg" id='regBtn'> 还没有用户? 点击这里注册</a>
+        <a id='regBtn' @click="regClick"> 还没有用户? 点击这里注册</a>
       </form>
     </div>
     <div id="footer">备案号</div>
@@ -54,12 +49,15 @@ export default {
           sessionStorage.removeItem("token")
           alert(data.msg)}
       }))         
+    },
+    regClick () {
+      this.$router.push("/register")
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
 #rootLogin {
   height: 100vh;
   display: flex;

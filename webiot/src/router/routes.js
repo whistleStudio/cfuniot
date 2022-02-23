@@ -4,6 +4,7 @@ const User = () => import("views/user/User")
 const U0 = () => import("views/user/u0/U0")
 const U1 = () => import("views/user/u1/U1")
 const U2 = () => import("views/user/u2/U2")
+const ResetPwd = () => import("views/register/ResetPwd")
 
 const routes = [
   {
@@ -16,7 +17,11 @@ const routes = [
   },
   {
     path: "/register",
-    component: Register
+    component: Register,
+  },
+  {
+    path: "/ResetPwd",
+    component: ResetPwd
   },
   {
     path: "/user",

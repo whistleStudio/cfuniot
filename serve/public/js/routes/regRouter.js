@@ -19,10 +19,10 @@ rt.get('/checkVal', (req, res) => {
   search[key] = val
   User.findOne(search, (err, doc) => {
     if(!err) {
-      if(doc) res.json({err:1, msg:'already exsist'})
+      if(doc) res.json({err:1, msg:{name:"用户名已存在, 换一个吧", mail: "邮箱已被注册, 换一个吧"}})
       else res.json({err:0})
     } else {
-      res.json({err:2, msg:'database error'})
+      res.json({err:5, msg:'database error'})
     }
   })
 })
@@ -33,8 +33,15 @@ rt.get('/sendMail', (req, res) => {
   MailV.create({mail, vcode}, (err, doc) => {
     if(err) console.log(err)
   })
-  sendMail(mail, vcode).catch(console.error)
-  res.json({err:0})
+  ;(async () => {
+    try {
+      await sendMail(mail, vcode)
+      res.json({err:0})
+    } catch (e) {
+      console.log(e)
+      res.json({err:5, msg:"send mail fail"})
+    }
+  })()
 })
 
 rt.post('/regSubmit', (req, res) => {
@@ -50,7 +57,7 @@ rt.post('/regSubmit', (req, res) => {
           await Device.create({user:mail, name:"创趣小屋", did:1})
           res.json({err:0, msg:'注册成功, 页面将在3秒后跳转'})
         }
-        else res.json({err:1, msg:'用户名或邮箱已存在，请更换'})      
+        else res.json({err:1, msg:'用户名或邮箱已存在, 请更换'})      
       }else {
         res.json({err:2, msg:'验证码输入错误'})
       }      
@@ -61,9 +68,9 @@ rt.post('/regSubmit', (req, res) => {
   })()
 })
 
-rt.get('/resetPassword', (req, res) => {
-  res.sendFile(`${rt.stp}/public/page/resetPwd.html`)
-})
+// rt.get('/resetPassword', (req, res) => {
+//   res.sendFile(`${rt.stp}/public/page/resetPwd.html`)
+// })
 
 rt.get('/checkVCode', (req, res) => {
   console.log('sss')
@@ -71,10 +78,10 @@ rt.get('/checkVCode', (req, res) => {
   ;(async () => {
     let doc = await MailV.findOne({mail, vcode})
     if (doc) {
-      // res.json({err:0})
+      // 需要修改
       res.sendFile(`${rt.stp}/public/page/resetPwd2.html`)
     }
-    else res.status(403).json({err:1, msg:'验证码输入错误'})
+    else res.json({err:1, msg:'验证码输入错误'})
   })().catch(e => res.status(500).json({err:2, msg:'database error'}))
 })
 

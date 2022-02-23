@@ -12,8 +12,8 @@
       </li>
     </ul>
     </div>
-    <div id='main-content-detail' style="margin-left: 80px;">
-    <div id='refreshDevBtn'>[状态刷新]</div>
+    <div id='main-content-detail' style="margin-left: 80px; margin-top:50px">
+    <!-- <div id='refreshDevBtn'>[状态刷新]</div> -->
     <div>
       <table class="table table-hover">
         <thead>

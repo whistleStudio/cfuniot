@@ -4,7 +4,7 @@ const mailSchema = new mongoose.Schema({
   // user: String,
   mail: String,
   vcode: String,
-  tempDate: {type:Date, default: new Date(), expires:60*3}
+  tempDate: {type:Date, default: new Date(), expires:60*5}
 })
 
 const MailV = mongoose.model('mailV', mailSchema)

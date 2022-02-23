@@ -225,7 +225,7 @@ export default {
       }))            
     },
     rReqData (i, act_id) {
-      console.log("rReqData---",act_id)
+      // console.log("rReqData---",act_id)
       fetch(`/api/data/reqData`, {
         method: 'POST',
         headers: {
@@ -316,9 +316,6 @@ export default {
     // }
   },
   created () {
-    // console.log(ExcelJS)
-    // console.log(this.$store.state.dataResetOk)
-    // console.log(this.$store.state.curDevs)
     // if (this.$store.state.dataResetOk) {
     //     let n = 0
     //     let t = setInterval(()=> {
