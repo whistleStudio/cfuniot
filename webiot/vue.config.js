@@ -22,30 +22,18 @@ module.exports = {
         }
       }
     },
-    // optimization: {
-    //   minimize: true,
-    //   minimizer: [
-    //     new TerserPlugin({
-    //       terserOptions: {
-    //         compress: {
-    //           pure_funcs: ["console.log"]
-    //         }
-    //       }
-    //     })
-    //   ]  
-    // }
-    // optimization: {
-    //   minimize: true,
-    //   minimizer: [
-    //     new TerserPlugin({
-    //       terserOptions: {
-    //         compress: {
-    //           drop_console: true, // 默认false，设置为true, 则会删除所有console.* 相关的代码。
-    //           pure_funcs: ["console.log"], // 单纯禁用console.log
-    //         }
-    //       }
-    //     })
-    //   ]
-    // }
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true, // 默认false，设置为true, 则会删除所有console.* 相关的代码。
+              pure_funcs: ["console.log"], // 单纯禁用console.log
+            }
+          }
+        })
+      ]
+    }
   }
 }
