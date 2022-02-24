@@ -59,3 +59,4 @@ methodName: fn(function () {
 })
 开始写resetPwd页面了，之前写的居然还漏了密码重置，简直了
 [02241257] resetPwd完成，基本上重构完成；console.log打包消除待解决
+[02241611] 纠正了图表的3个bug, 丑化插件，还没办法跟着一起打包

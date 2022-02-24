@@ -44,7 +44,7 @@
                   <input @click="toggleDataBtn(i+4)" :checked="dataState[actDataIdx][i+4]" :disabled="!haveDev"
                   class="form-check-input" type="checkbox" :id="`flexSwitchCheckDefault${i+4}`">
                 </div>
-                <div><span v-show="dataState[actDataIdx][i+4]">{{$store.state.pageData[i+4]}}</span></div>
+                <div><span v-show="dataState[actDataIdx][i+4]">{{pageData[actDataIdx][i+4]}}</span></div>
               </div>
             </div>    
           </div>
@@ -129,6 +129,7 @@ export default {
       clearInterval(this.timGra)
       if (this.dataState[this.actDataIdx][9] == -1) this.myGraph.clear()
       else {
+        this.myGraph.clear()
         let n = this.dataState[this.actDataIdx][9]
         let title = this.actName + "-数据" + String.fromCharCode(65+n)
         this.drawGraph(title, this.graCache[this.actDataIdx][i]) 
@@ -136,6 +137,7 @@ export default {
     },
     toggleDataBtn (i, inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
+      console.log('---',this.actDataIdx)
       if (this.dataState[this.actDataIdx][i]) {
         let act_id = this.act_id 
         let t = setInterval(() => {
@@ -173,10 +175,14 @@ export default {
         case 0:
           this.graShowFlag = Number(!this.graShowFlag)
           if (this.graShowFlag) {
+            this.myGraph.clear()
+            clearInterval(this.timGra)            
             let n = this.dataState[this.actDataIdx][9]
             let title = this.actName + "-数据" + String.fromCharCode(65+n)
+            this.drawGraph(title, this.graCache[this.actDataIdx][n])
             let t =setInterval(()=>{  
-              this.drawGraph(title, this.graCache[this.actDataIdx][i])
+              // console.log(i)
+              this.drawGraph(title, this.graCache[this.actDataIdx][n])
             },2000)
             this.timGra = t
           } else clearInterval(this.timGra)
@@ -222,7 +228,6 @@ export default {
       }))            
     },
     rReqData (i, act_id) {
-      // console.log("rReqData---",act_id)
       fetch(`/api/data/reqData`, {
         method: 'POST',
         headers: {
@@ -240,6 +245,7 @@ export default {
         if (!isNaN(num)) {
           if(num%1 !== 0) num = num.toFixed(2)
           else num = parseInt(num)
+          console.log(num)
           this.$store.commit("changeGraCache", {k: act_id, i: i, v: num, l: this.$store.getters._idArr})
         } 
       }))
@@ -249,6 +255,7 @@ export default {
       this.graShowFlag = 0
       if (this.timGra) clearInterval(this.timGra)  
       this.$store.commit("changeArrVal", {k:"dataState", v:i, idx:[this.actDataIdx,9]})
+      this.myGraph.clear()
       let n = this.dataState[this.actDataIdx][9]
       let title = this.actName + "-数据" + String.fromCharCode(65+n)
       this.drawGraph(title, this.graCache[this.actDataIdx][i])   

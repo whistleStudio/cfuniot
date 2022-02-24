@@ -7,9 +7,10 @@ const User = require('../db/model/User')
 /* 私有 */
 rt.post('/reqData', (req, res) => {
   // let user = req.userx.name
-  let {_did, i} = req.body
+  let {_id, i} = req.body
+  console.log(_id)
   // let datax = `data${i}`
-  Device.findOne({_did}, (err, doc) => {
+  Device.findOne({_id}, (err, doc) => {
     if(!err&&doc) {
       if (i < 4) res.json({err:0, val:doc.Cnum1})
       else res.json({err:0, val:doc.Cnum2})

@@ -54,9 +54,9 @@ export default {
     // if (this.$route.path.match(/\/user\/.+/)) {
     //   this.$router.push("/user")
     // }
-    // window.onbeforeunload= e => {
-    //   return "关闭提示"
-    // }
+    window.onbeforeunload= e => {
+      return "关闭提示"
+    }
   },
 
 }
