@@ -122,9 +122,6 @@ export default {
     "p-comment": PComment
   },
   methods: {
-    test () {
-      console.log('WTF')
-    },
     /* 切换设备标签页 */
     changeTag (i) {
       this.actDataIdx = i

@@ -5,7 +5,7 @@
       <!-- 用户名, 密码，确认密码，邮箱 -->
       <div  v-for="(v, i) in regInfo" :key="v.id" class="col-12">
       <label :for="v.id" class="form-label">{{v.label}}</label>
-      <input v-model="v.v" @blur="usernameCheck(i)" @click="usernameClick(i)"
+      <input v-model="v.v" @blur="infoCheck(i)" @click="infoClick(i)"
       :class="{'is-valid': v.valid>0, 'is-invalid': !v.valid}"
       :type=v.type class="form-control" :id="v.id" :placeholder=v.place>
       <div class="invalid-feedback">
@@ -57,10 +57,10 @@ export default {
     }
   },
   methods: {
-    usernameClick (i) {
+    infoClick (i) {
       this.regInfo[i].valid = -1
     },
-    usernameCheck (i) {
+    infoCheck (i) {
       let reg = this.regs[i]
       if (reg.test(this.regInfo[i].v)) {
         ;(async ()=>{
@@ -142,7 +142,7 @@ export default {
           setTimeout(() => {
             this.$router.push("/login")
           }, 3000)
-        }
+        } else this.vCode = ""
         alert(data.msg)
       }))      
     }

@@ -137,7 +137,7 @@ export default {
         .then(res => res.json()
         .then(data => {
           this.$store.commit("changeVal", {k:"curDevs", v:data.data})
-          console.log(data.data)
+          // console.log(data.data)
           resolve()
         }))
         .catch(e => reject())
@@ -219,7 +219,7 @@ export default {
     /* 删除设备 */
     delDev (i) {
       let did = this.$store.state.curDevs[i].did
-      console.log(this.allCount)
+      // console.log(this.allCount)
       if (this.allCount>1) {
         ;(async () => {
           try {

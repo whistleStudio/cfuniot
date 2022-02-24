@@ -62,7 +62,7 @@ rt.post('/regSubmit', (req, res) => {
         res.json({err:2, msg:'验证码输入错误'})
       }      
     } catch (e) {
-      console.log(new Date(), e)
+      console.log("regSubmit--", e)
       res.json({err:5, msg:'database error'})
     }
   })()
@@ -73,28 +73,29 @@ rt.post('/regSubmit', (req, res) => {
 // })
 
 rt.get('/checkVCode', (req, res) => {
-  console.log('sss')
   let {mail, vcode} = req.query
   ;(async () => {
-    let doc = await MailV.findOne({mail, vcode})
-    if (doc) {
-      // 需要修改
-      res.sendFile(`${rt.stp}/public/page/resetPwd2.html`)
-    }
-    else res.json({err:1, msg:'验证码输入错误'})
-  })().catch(e => res.status(500).json({err:2, msg:'database error'}))
+    try {
+      let doc = await MailV.findOne({mail, vcode})
+      if (doc) {
+        res.json({err:0})
+      }
+      else res.json({err:1, msg:'验证码输入错误'})
+    } catch(e) {console.log("checkVCode--", e); res.status(500).json({err:5, msg:'database error'})}
+  })()
 })
 
 rt.post('/changePassword', (req, res) => {
   let {mail, pwd} = req.body
   ;(async () => {
-    let q = await User.updateOne({mail}, {pwd})
-    // console.log(q)
-    if (q.modifiedCount > 0) {
-      res.clearCookie('token')
-      res.json({err: 0, msg:'密码修改成功，页面即将跳转'})
-    } else res.json({err:1, msg:'未查找到对应用户，请先注册'})
-  })().catch(e => res.status(500).json({err:2, msg:'database error'}))
+    try {
+      let q = await User.updateOne({mail}, {pwd})
+      if (q.modifiedCount > 0) {
+        res.clearCookie('token')
+        res.json({err: 0, msg:'密码修改成功, 页面即将跳转'})
+      } else res.json({err:1, msg:'未查找到对应用户, 请先注册'})
+    } catch (e) {console.log("changePassword--",e);res.status(500).json({err:2, msg:'database error'})}
+  })()
   
 })
 

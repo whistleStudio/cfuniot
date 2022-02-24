@@ -15,7 +15,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   let token = sessionStorage.getItem("token")
-  if (token || to.path === "/login" || to.path === "/register") {
+  if (token || to.path === "/login" || to.path === "/register" || to.path === "/resetPwd") {
     next()
   } else {
     next("/login")

@@ -58,3 +58,4 @@ methodName: fn(function () {
     this.foo()
 })
 开始写resetPwd页面了，之前写的居然还漏了密码重置，简直了
+[02241257] resetPwd完成，基本上重构完成；console.log打包消除待解决
