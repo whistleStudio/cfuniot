@@ -60,6 +60,6 @@ methodName: fn(function () {
 开始写resetPwd页面了，之前写的居然还漏了密码重置，简直了
 [02241257] resetPwd完成，基本上重构完成；console.log打包消除待解决
 [02241611] 纠正了图表的3个bug, 丑化插件，还没办法跟着一起打包
-[0202251318] 丑化插件没法正常打包多半是因为package.json里写的版本号不对，解决方法就是上npm查一下究竟有啥版本；另外，当一个包没法正常npm uninstall时，可能也是因为其它包版本不对没有正常安装
+[02251319] 丑化插件没法正常打包多半是因为package.json里写的版本号不对，解决方法就是上npm查一下究竟有啥版本；另外，当一个包没法正常npm uninstall时，可能也是因为其它包版本不对没有正常安装
 优化了首页加载速度，采用cdn外链引入，找cdn途径：1去npm上查查 2搜索cdn xxx
 vue-router引入，比较特别项目有import会报$router重复定义错误, 解决办法: cdn引入后,卸载vue-router,并注释掉相关 import vue-router 引用
