@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   mail: String,
   regDate: {type: Date, default: new Date()},
   logDate: Date,
-  authority: {type: Number, default: 0},
+  authority: {type: Number, default: 1},
   authDate: {type: Date, default: new Date()},
   tel: Number,
   role: Number,
