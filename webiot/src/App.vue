@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import  "bootstrap/dist/js/bootstrap.bundle.min.js"
+// import  "bootstrap/dist/js/bootstrap.bundle.min.js"
 export default {
   name: 'App',
   components: {

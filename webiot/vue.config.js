@@ -34,6 +34,15 @@ module.exports = {
           }
         })
       ]
+    },
+    externals: {
+      Vue: "Vue",
+      VueRouter: "VueRouter",
+      Vuex: "Vuex",
+      echarts: "echarts",
+      marked: "marked",
+      ExcelJS: "exceljs"
+
     }
   }
 }
