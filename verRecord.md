@@ -66,3 +66,12 @@ vue-router引入，比较特别项目有import会报$router重复定义错误, �
 [02251652] 修改了model User的authority默认值为1
 $router重复定义错误原因：
 cdn导入和原来的import 导致Vue.use(VueRouter)执行了两次，至于打包为啥不行，是因为我默认创建项目时，勾选了vue-router,有内置的？externals没用吗
+config里webserver中的pathrewrite不会在打包后，把请求替换。比如
+```
+pathRewrite: {
+            "^/api": ""
+          }
+```
+开发环境中，/api/xxx请求会被替换成/xxx;
+生产环境中，/api/xxx依然是/api/xxx
+所以索性一开始后端路由就写成/api/xxx还有就是重写"^/api": "/api",或者用nginx处理？
