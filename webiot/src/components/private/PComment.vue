@@ -31,6 +31,7 @@
 
 <script>
   import {marked} from "marked"
+  // const marked
   import getTextLen from "utils/getTextLen"
 
   export default {

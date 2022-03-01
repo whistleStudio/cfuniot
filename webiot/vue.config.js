@@ -40,7 +40,7 @@ module.exports = {
       VueRouter: "VueRouter",
       Vuex: "Vuex",
       echarts: "echarts",
-      marked: "marked",
+      // marked: "marked",
       ExcelJS: "exceljs"
 
     }
