@@ -30,8 +30,7 @@
 </template>
 
 <script>
-  import {marked} from "marked"
-  // const marked
+  // import {marked} from "marked"
   import getTextLen from "utils/getTextLen"
 
   export default {
