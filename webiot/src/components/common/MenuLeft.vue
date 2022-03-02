@@ -3,6 +3,7 @@
     <ul>
       <li>{{menuHead.name}}</li>
       <li v-for="(v, i) in menuInfo" :key="i" @click="changePage(v.path)">{{v.name}}</li>
+      <div id="logo"></div>
     </ul>
   </div>
 </template>
@@ -11,7 +12,7 @@
 export default {
   data () {
     return {
-      menuHead: {name: "创趣物联", img:""},
+      menuHead: {name: "创趣物联", img: require("img/user/logoW.png")},
       menuInfo: [
         {name: "设备信息", path: "device"},
         {name: "控制界面", path: "ctrl"},
@@ -37,6 +38,7 @@ export default {
   }
   #menu>ul {
     padding-left: 0;
+    /* position: relative; */
   }
   #menu li:first-of-type {
     background-color: var(--rMainColorDark);
@@ -46,5 +48,15 @@ export default {
     font: 17px/80px sans-serif;
     border-bottom: 1px solid rgba(255,255,255,0.2);
     cursor: pointer;
+  }
+  #logo {
+    width: 120px;
+    height: calc(120px/1.4);
+    position: fixed;
+    background: url("~img/user/logoW.png") center/contain no-repeat;
+    bottom: 2rem;
+    left: 32px;
+    /* transform: translate(-50%); */
+    opacity: 0.15;
   }
 </style>

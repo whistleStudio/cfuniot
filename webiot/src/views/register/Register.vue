@@ -1,6 +1,7 @@
 <template>
 <div id="regView">
   <div id='regForm'>
+    <div id="logo"></div>
     <form class="row g-3">
       <!-- 用户名, 密码，确认密码，邮箱 -->
       <div  v-for="(v, i) in regInfo" :key="v.id" class="col-12">
@@ -170,14 +171,27 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: url("~img/login/bg2.jpg") center/cover no-repeat;
 }
 #regForm {
   width: 600px;
   padding: 50px;
-  border: 2px solid rgba(110, 168, 254, 0.5);
+  border: 2px solid rgba(110, 168, 254, 0.2);
   border-radius: 10px;
+  position: relative;
+  background-color: #fff;
+  box-shadow: 1px 1px 1px 1px ghostwhite;
 }
-
+#logo {
+  width: 120px;
+  height: calc(120px / 1.4);
+  position: absolute;
+  left: 50%;
+  top: calc(-60px / 1.4);
+  transform: translate(-50%);
+  background: url("~img/login/cflogo.png") center/contain no-repeat;
+  background-color: white;
+}
 #regForm>form {
   margin: 0 auto;
   width: 500px;

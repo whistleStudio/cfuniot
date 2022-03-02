@@ -77,3 +77,4 @@ pathRewrite: {
 所以索性一开始后端路由就写成/api/xxx还有就是重写"^/api": "/api",或者用nginx处理？
 [03011730] 注释marked有问题
 [03012124] server.js 不是所有的/api都需要token；cdn引入了之后，import就可以不用了，虽然会有config里的externals让打包时引用作废，但为了测试CDN速度还是开发时就注释了把；或者最后一个个再试也行
+[03021742] UI美化

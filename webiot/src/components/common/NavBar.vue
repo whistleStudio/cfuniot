@@ -240,7 +240,7 @@ export default {
     border-radius: 8px;
     background: center/contain no-repeat;
     margin-left: 10px;
-    background-color: orange; 
+    /* background-color: orange;  */
     cursor: pointer;  
   }
 

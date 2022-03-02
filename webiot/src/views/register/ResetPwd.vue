@@ -37,6 +37,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* background: #000;   */
+  background: url("~img/login/bg2.jpg") center/cover no-repeat;
 }
 
 </style>

@@ -1,6 +1,7 @@
 <!-- set new pwd  -->
 <template>
   <div id="resetPwdBox2">
+    <div id="logo"></div>
     <div class="mb-3" style="margin-top: 20px">
       <div  v-for="(v, i) in newPwd" :key="v.id" class="col-12" style="margin-top: 20px">
       <label :for="v.id" class="form-label">{{v.label}}</label>
@@ -79,13 +80,16 @@
   #resetPwdBox2 {
     width: 550px;
     height: 400px;
-    border: 1px solid gainsboro;
-    border-radius: 20px;
+    border: 2px solid rgba(110, 168, 254, 0.2);
+    border-radius: 10px;
+    position: relative;
+    background-color: #fff;
+    box-shadow: 1px 1px 1px 1px ghostwhite;
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  #resetPwdBox2>div {
+  #resetPwdBox2>div:last-of-type {
     width: 450px;
     height: 300px;
   }
@@ -93,5 +97,15 @@
     margin: 50px auto;
     display: block;
     width: 450px;
+  }
+  #logo {
+    width: 120px;
+    height: calc(120px / 1.4);
+    position: absolute;
+    left: 50%;
+    top: calc(-60px / 1.4);
+    transform: translate(-50%);
+    background: url("~img/login/cflogo.png") center/contain no-repeat;
+    background-color: white;
   }
 </style>

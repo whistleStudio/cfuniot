@@ -16,6 +16,7 @@ a {
   text-decoration: none;
 }
 :root {
+  --rCfColor: #00A1E9;
   --rMainColor: rgb(8, 121, 144);
   --rMainColorDark: rgb(5, 81, 96);
   /* --rFontColorA: rgba(23, 73, 178, 0.8); */
