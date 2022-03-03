@@ -80,3 +80,4 @@ pathRewrite: {
 [03021742] UI美化
 
 [03032152] 添加user/intro路由；iframe标签直接引入静态html文件，html文件要放在vuecli的静态资源文件夹public里，否则会有问题
+[03032323] iframe内部滚动条$iframe.contentWindow.scrollY / scrollTo({top: 0, behavior: 'smooth'})

@@ -1,7 +1,7 @@
 <template>
   <div id="menu">
     <ul>
-      <li>{{menuHead.name}}</li>
+      <li @click="changePage(menuHead.path)">{{menuHead.name}}</li>
       <li v-for="(v, i) in menuInfo" :key="i" @click="changePage(v.path)">{{v.name}}</li>
       <div id="logo"></div>
     </ul>
@@ -12,7 +12,7 @@
 export default {
   data () {
     return {
-      menuHead: {name: "创趣物联", img: require("img/user/logoW.png")},
+      menuHead: {name: "创趣物联", path: "intro"},
       menuInfo: [
         {name: "设备信息", path: "device"},
         {name: "控制界面", path: "ctrl"},
