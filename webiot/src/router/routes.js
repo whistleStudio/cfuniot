@@ -5,6 +5,7 @@ const U0 = () => import("views/user/u0/U0")
 const U1 = () => import("views/user/u1/U1")
 const U2 = () => import("views/user/u2/U2")
 const ResetPwd = () => import("views/register/ResetPwd")
+const Intro = () => import("views/intro/Intro")
 
 const routes = [
   {
@@ -27,6 +28,14 @@ const routes = [
     path: "/user",
     component: User,
     children: [
+      {
+        path: "",
+        redirect: "/user/intro"
+      },
+      {
+        path: "intro",
+        component: Intro
+      },
       {
         path: "device",
         component: U0

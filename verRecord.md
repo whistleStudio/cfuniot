@@ -78,3 +78,5 @@ pathRewrite: {
 [03011730] 注释marked有问题
 [03012124] server.js 不是所有的/api都需要token；cdn引入了之后，import就可以不用了，虽然会有config里的externals让打包时引用作废，但为了测试CDN速度还是开发时就注释了把；或者最后一个个再试也行
 [03021742] UI美化
+
+[03032152] 添加user/intro路由；iframe标签直接引入静态html文件，html文件要放在vuecli的静态资源文件夹public里，否则会有问题
