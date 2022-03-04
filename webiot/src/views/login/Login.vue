@@ -1,5 +1,5 @@
 <template>
-  <div id='rootLogin'>
+  <div :style="{backgroundImage: `url(${require('img/login/bg'+roll+'.jpg')})`}" id='rootLogin'>
     <div id="logbox">
       <div id="logshow">
         <div></div>
@@ -26,7 +26,6 @@
       </form>
       </div>      
     </div>
-
     <div id="footer">备案号</div>
   </div>
 </template>
@@ -36,7 +35,8 @@ export default {
   data () {
     return {
       mail: "",
-      pwd: ""
+      pwd: "",
+      roll: 1,
     }
   },
   methods: {
@@ -67,7 +67,10 @@ export default {
     },
     forgetClick () {
       this.$router.push("/resetPwd")
-    }
+    },
+  },
+  created () {
+    this.roll = Math.floor(Math.random()*10)
   }
 }
 </script>
@@ -79,7 +82,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url("~img/login/bg1.jpg") center/cover no-repeat;
+  background:  center/cover no-repeat;
 }
 #logbox {
   width: 900px;

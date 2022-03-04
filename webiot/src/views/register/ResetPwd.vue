@@ -1,6 +1,6 @@
 <!-- resetPwd -->
 <template>
-  <div id="resetPwd" >
+  <div id="resetPwd" :style="{backgroundImage: `url(${require('img/login/bg'+roll+'.jpg')})`}">
     <reset-pwd-1 v-if="step==1" @nextStep="nextStep"/>
     <reset-pwd-2 v-else :myMail="myMail"/>
   </div>
@@ -14,7 +14,8 @@
     data () {
       return {
         step: 1,
-        myMail: ""
+        myMail: "",
+        roll: 1,
       };
     },
     components: {
@@ -26,6 +27,9 @@
         this.step = step
         this.myMail = mail
       }
+    },
+    created () {
+      this.roll = Math.floor(Math.random()*10)
     }
   }
 </script>
@@ -38,7 +42,7 @@
   justify-content: center;
   align-items: center;
   /* background: #000;   */
-  background: url("~img/login/bg2.jpg") center/cover no-repeat;
+  background:  center/cover no-repeat;
 }
 
 </style>

@@ -1,5 +1,5 @@
 <template>
-<div id="regView">
+<div id="regView" :style="{backgroundImage: `url(${require('img/login/bg'+roll+'.jpg')})`}">
   <div id='regForm'>
     <div id="logo"></div>
     <form class="row g-3">
@@ -54,7 +54,8 @@ export default {
       ],
       vCode:"",
       vCodeHint: "获取验证码",
-      sendOk: 1
+      sendOk: 1,
+      roll: 1
     }
   },
   methods: {
@@ -157,6 +158,9 @@ export default {
       if (count === 4) return true
       else return false
     }
+  },
+  created () {
+    this.roll = Math.floor(Math.random()*10)
   }
 }
 </script>
