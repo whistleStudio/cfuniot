@@ -8,7 +8,7 @@ dateFormat()
 const store = new Vuex.Store({
   state: {
     dataResetOk: 0,
-    curName: "", curMail: "", curAvatar: 0, curAuth: Number, curAuthDate: "",
+    curName: "", curMail: "", curAvatar: 0, curAuth: Number, curAuthDate: "", curRole: "",
     curDevs: [],
     /* graph */
     timGra: {},

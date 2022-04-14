@@ -1,4 +1,4 @@
-const ExcelJS = require("exceljs")
+// const ExcelJS = require("exceljs")
 
 /* 生成表格 */
 function genWorkbook (arr, dataName) {

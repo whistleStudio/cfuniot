@@ -57,6 +57,7 @@
     methods: {
       noteClick () {
         this.clickFlag = 1
+        document.querySelector("#comment").style.width="515px"
       },
       iconClick (i) {
         switch (i) {
@@ -71,7 +72,10 @@
             break
           case 2:
             this.clickFlag = 2
-            setTimeout(()=>{this.clickFlag = 0}, 600)
+            setTimeout(()=>{
+              this.clickFlag = 0
+              document.querySelector("#comment").style.width="60px"
+            }, 600)
             break
           default:
             break
@@ -123,7 +127,7 @@
 
 <style lang='css' scoped>
 #comment {
-  width: 515px;
+  width: 60px;
   height: 620px;
   position: fixed;
   right: 0;

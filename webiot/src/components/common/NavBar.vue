@@ -12,7 +12,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">我的信息</h5>
+          <h5 class="modal-title">我的信息</h5> <span @click="logoutClick" id="logout">[退出登录]</span>
           <button ref="closeModal" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -57,19 +57,22 @@
                   <div class="col-9">
                     <!-- <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline"> -->
                     <img :src="require('img/user/lvl.png')" alt=""><span id='lvl'>LV{{curAuth}}</span>
-                    <button id="btnLvl" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#lvlModal">权限升级</button>
+                    <button id="btnLvl" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#lvlModal">激活码升级</button>
                   </div>
                   <div class="offset-3">
                     <span id='invalidDate' v-show="$store.state.curAuth>1">失效时间: {{curAuthDate}}</span>
                   </div>         
                 </div>
                 <!-- 账号安全 -->
-                <div class="row" id="pwdReset">
+                <div class="row mgb-20" id="pwdReset">
                   <div class="col-3">
                     <label  class="col-form-label">账号安全</label>
                   </div>
                   <div class="col-9">
-                    <button @click="resetPwd" type="button" class="btn btn-danger">修改密码</button>
+                    <button v-if="$store.state.curRole" @click="resetPwd" type="button" class="btn btn-danger">修改密码</button>
+                    <span v-else class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="无修改权限, 请联系父级用户">
+                      <button class="btn btn-secondary" type="button" disabled>修改密码</button>
+                    </span>
                   </div>  
                 </div>
               </form>
@@ -161,7 +164,7 @@ export default {
     },
     // 更换昵称
     changeName () {
-      let reg = /([A-Za-z0-9]|_){6,16}/
+      let reg = /^([A-Za-z0-9]|_){6,16}$/
       let ipN = document.querySelector('#ipUsername')
       let newName = ipN.value
       console.log(newName)
@@ -199,9 +202,13 @@ export default {
     },
     // 修改密码 (待补充)
     resetPwd () {
-
       this.$refs.closeModal.click()
       this.$router.push("/resetPwd")
+    },
+    // 退出登录
+    logoutClick () {
+      this.$refs.closeModal.click()
+      setTimeout(()=>{this.$router.push("/login")}, 200)  
     }  
   }
 }
@@ -353,5 +360,12 @@ export default {
   #avatarWrap>.item:hover {
     box-shadow: 3px 3px 3px gray;
     opacity: 1;
+  }
+  #logout {
+    margin-left: 1rem;
+    cursor: pointer;
+  }
+  #logout:hover {
+    color: var(--rCfColor);
   }  
 </style>

@@ -188,7 +188,10 @@ export default {
           } else clearInterval(this.timGra)
           break
         case 1:
+          let n = this.dataState[this.actDataIdx][9]
           this.$store.commit("changeArrVal", {k:"dataState", v:-1, idx:[this.actDataIdx,9]})
+          if (n>=0)
+          this.$store.commit("changeArrVal", {k:"graCache", v:[], idx:[this.actDataIdx,n]})
           clearInterval(this.timGra)
           this.myGraph.clear()
           break
@@ -305,30 +308,7 @@ export default {
     },
 
   },
-  watch: {
-    // setOk (newVal) {
-    //   if(newVal) {
-    //     // console.log(newVal)
-    //     let n = 0
-    //     let t = setInterval(()=> {
-    //       this.myGraph = this.$echarts.init(this.$refs.gra)
-    //       if(this.myGraph) clearInterval(t)
-    //       if(n>10) alert("数据挂载失败, 请刷新页面")
-    //       n++
-    //     },50)
-    //   }
-    // }
-  },
   created () {
-    // if (this.$store.state.dataResetOk) {
-    //     let n = 0
-    //     let t = setInterval(()=> {
-    //       this.myGraph = this.$echarts.init(this.$refs.gra)
-    //       if(this.myGraph) clearInterval(t)
-    //       if(n>10) alert("数据挂载失败, 请刷新页面")
-    //       n++
-    //     },50)      
-    // }
     console.log("u2 created")
   },
   mounted () {

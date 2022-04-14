@@ -32,6 +32,7 @@ export default {
         // console.log(data)
         this.$store.commit("changeVal", {k:"curName", v:data.name})
         this.$store.commit("changeVal", {k:"curMail", v:data.mail})
+        this.$store.commit("changeVal", {k:"curRole", v:data.role})
         this.$store.commit("changeVal", {k:"curAvatar", v:data.avatar})
         this.$store.commit("changeVal", {k:"curAuth", v:data.authority})
         this.$store.commit("changeVal", {k:"curAuthDate", v:data.authDate})

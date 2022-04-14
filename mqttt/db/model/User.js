@@ -23,8 +23,7 @@ function genCode () {
   var reg = /\/|\+|=/g
   var code = new Date()
   var code = hash(code, { algorithm: 'md5', encoding: 'base64' }).replace(reg, '')
-  
-  return code.slice(0,10)
+  return code
 }
 
 const User = mongoose.model('users', userSchema)
