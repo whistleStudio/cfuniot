@@ -1,6 +1,15 @@
 const TerserPlugin = require("terser-webpack-plugin")
+const CompressionPlugin = require("compression-webpack-plugin")
 module.exports = {
+  productionSourceMap:false,
   configureWebpack: {
+    plugins: [
+      new CompressionPlugin({
+        test: /\.(js|css)(\?.*)?$/i,//需要压缩的文件正则
+        threshold: 10240,//文件大小大于这个值时启用压缩
+        deleteOriginalAssets: false//压缩后保留原文件
+      }),
+    ],
     resolve: {
       alias: {
         "assets": "@/assets",
@@ -8,18 +17,6 @@ module.exports = {
         "img": "@/assets/img",
         "components": "@/components",
         "utils": "@/utils"
-      }
-    },
-    devServer: {
-      proxy: {
-        "/api": {
-          target: "http://127.0.0.1:8082",
-          ws: true,
-          changeOrigin: true,
-          pathRewrite: {
-            "^/api": ""
-          }
-        }
       }
     },
     optimization: {
@@ -43,6 +40,18 @@ module.exports = {
       marked: "marked",
       ExcelJS: "exceljs"
 
+    }
+  },
+  devServer: {
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8082",
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          "^/api": ""
+        }
+      }
     }
   }
 }

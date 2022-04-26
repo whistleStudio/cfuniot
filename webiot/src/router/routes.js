@@ -1,11 +1,11 @@
-const Login = () => import("views/login/Login")
-const Register = () => import("views/register/Register")
-const User = () => import("views/user/User")
-const U0 = () => import("views/user/u0/U0")
-const U1 = () => import("views/user/u1/U1")
-const U2 = () => import("views/user/u2/U2")
-const ResetPwd = () => import("views/register/ResetPwd")
-const Intro = () => import("views/intro/Intro")
+import Login from "views/login/Login"
+const Register = res => require(["views/register/Register"], res)
+const User = res => require(["views/user/User"], res)
+const U0 = res => require(["views/user/u0/U0"], res)
+const U1 = res => require(["views/user/u1/U1"], res)
+const U2 = res => require(["views/user/u2/U2"], res)
+const ResetPwd = res => require(["views/register/ResetPwd"], res)
+const Intro = res => require(["views/intro/Intro"], res)
 
 const routes = [
   {

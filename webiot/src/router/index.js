@@ -1,4 +1,4 @@
-import Vue from 'vue'
+
 // import VueRouter from 'vue-router'
 import routes from '@/router/routes'
 const originalPush = VueRouter.prototype.push
