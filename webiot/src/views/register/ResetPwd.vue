@@ -1,6 +1,6 @@
 <!-- resetPwd -->
 <template>
-  <div id="resetPwd" :style="{backgroundImage: `url(${require('img/login/bg'+roll+'.jpg')})`}">
+  <div id="resetPwd" :style="{backgroundImage: `url(${bgUrls[roll]})`}">
     <reset-pwd-1 v-if="step==1" @nextStep="nextStep"/>
     <reset-pwd-2 v-else :myMail="myMail"/>
   </div>
@@ -9,6 +9,7 @@
 <script>
   const ResetPwd1 = () => import("views/register/ResetPwd1")
   const ResetPwd2 = () => import("views/register/ResetPwd2")
+  import {bgUrls} from "../login/bgData.json"
 
   export default {
     data () {
@@ -16,6 +17,7 @@
         step: 1,
         myMail: "",
         roll: 1,
+        bgUrls
       };
     },
     components: {

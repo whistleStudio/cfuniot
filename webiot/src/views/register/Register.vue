@@ -1,5 +1,5 @@
 <template>
-<div id="regView" :style="{backgroundImage: `url(${require('img/login/bg'+roll+'.jpg')})`}">
+<div id="regView" :style="{backgroundImage: `url(${bgUrls[roll]})`}">
   <div id='regForm'>
     <div id="logo"></div>
     <form class="row g-3">
@@ -36,6 +36,7 @@
 
 <script>
 import throttle from "utils/throttle"
+import {bgUrls} from "../login/bgData.json"
 
 export default {
   data () {
@@ -55,7 +56,8 @@ export default {
       vCode:"",
       vCodeHint: "获取验证码",
       sendOk: 1,
-      roll: 1
+      roll: 1,
+      bgUrls
     }
   },
   methods: {

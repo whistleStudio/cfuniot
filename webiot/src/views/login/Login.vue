@@ -1,5 +1,5 @@
 <template>
-  <div :style="{backgroundImage: `url(${require('img/login/bg'+roll+'.jpg')})`}" id='rootLogin'>
+  <div :style="{backgroundImage: `url(${bgUrls[roll]})`}" id='rootLogin'>
     <div id="logbox">
       <div id="logshow">
         <div></div>
@@ -31,12 +31,15 @@
 </template>
 
 <script>
+import {bgUrls} from "./bgData.json"
+
 export default {
   data () {
     return {
       mail: "",
       pwd: "",
       roll: 1,
+      bgUrls
     }
   },
   methods: {
@@ -103,7 +106,7 @@ export default {
 #logshow>div {
   width: 80%;
   height: 80%;
-  background: url("~img/login/iotCartoon.png") center/contain no-repeat;
+  background: url("https://s1.ax1x.com/2022/04/28/LOUc38.png") center/contain no-repeat;
 }
 #login {
   width: 450px;
