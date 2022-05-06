@@ -1,11 +1,12 @@
 <template>
   <div>
     <div id="navbar">
-    <div>
+      <div>{{reqLoc.prov}}  {{reqLoc.city}}</div>
+      <div>
       <span>{{curName}}</span>
       <div id="profile" :style="{backgroundImage: `url(${require('img/user/av'+curAvatar+'.jpg')})`}" 
       data-bs-toggle="modal" data-bs-target="#profileModal" @click="newNameInfo.sta=-1"></div>
-    </div>
+      </div>
     </div>
     <!-- modal profile -->
     <div class="modal fade" id="profileModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="profileModalLabe" aria-hidden="true">
@@ -75,6 +76,25 @@
                     </span>
                   </div>  
                 </div>
+                <div class="row mgb-20" id="setLoc">
+                  <div class="col-3">
+                    <label  class="col-form-label">所在地</label>
+                  </div>
+                  <div class="col-4">
+                    <select v-model="actLoc.prov" @change="actLoc.city=0"
+                    class="form-select form-select" aria-label=".form-select-sm example">
+                    <option disabled value="-1">请选择省份</option>
+                    <option v-for="(v, i) in locInfo" :key="i" :value="i">{{v.name}}</option>
+                    </select> 
+                  </div>
+                  <div class="col-4">
+                    <select :disabled="!(actLoc.prov>=0)" v-model="actLoc.city"
+                    class="form-select form-select" aria-label=".form-select-sm example">
+                    <option disabled value="-1">请选择市/区</option>
+                    <option v-for="(v,i) in optCities" :key="i" :value="i">{{v}}</option>
+                    </select>  
+                  </div>
+                </div>
               </form>
             </div>
           </div>
@@ -121,6 +141,7 @@
 </template>
 
 <script>
+import {info as locInfo} from "../private/city.json"
 
 export default {
   data () {
@@ -130,6 +151,11 @@ export default {
         hint: ["","该用户名已经被使用了, 请更换", "该用户名不合法; 6-16个字符, 可使用数字、字母、下划线"]
       },
       actCode: "",
+      locInfo,
+      actLoc: {
+        prov: -1,
+        city: -1
+      },
     }
   },
   computed: {
@@ -148,6 +174,31 @@ export default {
     curAuthDate: function () {
       let ivD = new Date(this.$store.state.curAuthDate)
       return `${ivD.getFullYear()}-${ivD.getMonth()+1}-${ivD.getDate()}`
+    },
+    optCities: function () {
+      return this.actLoc.prov>=0 ? this.locInfo[this.actLoc.prov].city : []
+    },
+    reqLoc: function () {
+      let o = {}, prov="", city=""
+      if (this.actLoc.prov>=0) {
+        prov = this.locInfo[this.actLoc.prov].name
+        city = this.locInfo[this.actLoc.prov].city[this.actLoc.city]
+        let reg1 = /(.+)省/
+        if (reg1.test(prov)) {
+          prov = prov.match(reg1)[1]
+        } else {
+          prov = prov.slice(0,2)
+        }
+        let reg2 = /(.+)(市|县|盟|镇|区|州|地区)/
+        let reg3 = /新区/
+        if (city.length > 2) {
+          if (reg2.test(city)&&!reg3.test(city)){
+            city = city.match(reg2)[1]
+          }
+        }
+      }
+      o = {prov, city}
+      return o
     }
   },
   methods: {
@@ -210,6 +261,10 @@ export default {
       this.$refs.closeModal.click()
       setTimeout(()=>{this.$router.push("/login")}, 200)  
     }  
+  },
+  mounted () {
+    console.log(this.locInfo)
+    console.log(this.actLoc.prov>=0)
   }
 }
 </script>
@@ -224,16 +279,22 @@ export default {
     width: 100%;
     box-shadow: 0 1px 1px gainsboro;
     background-color: white;
-    /* z-index: 9; */
+    z-index: 1;
   }
   #navbar>div:first-of-type {
+    float: left;
+    height: 80px;
+    margin-left: 280px;
+    font: 20px/80px sans-serif;
+  }
+  #navbar>div:last-of-type {
     height: 80px;
     float: right;
     margin-right: 50px;
     display: flex;
     align-items: center;
   }
-  #navbar>div>span {
+  #navbar>div:last-of-type>span {
     display: inline-block;
     height: 80px;
     font: 20px/80px sans-serif;

@@ -35,6 +35,7 @@ export default {
     height: 120vh;
     background-color: var(--rMainColor);
     color: white;
+    z-index: 2;
   }
   #menu>ul {
     padding-left: 0;
