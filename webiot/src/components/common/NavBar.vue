@@ -1,7 +1,10 @@
 <template>
   <div>
     <div id="navbar">
-      <div>{{reqLoc.prov}}  {{reqLoc.city}}</div>
+      <div>{{reqLoc.prov}}  {{reqLoc.city}} 
+        <img src="" alt="">
+        <span id="weather"></span> <span id="tem2"></span>℃ - <span id="tem1"></span>℃
+      </div>
       <div>
       <span>{{curName}}</span>
       <div id="profile" :style="{backgroundImage: `url(${require('img/user/av'+curAvatar+'.jpg')})`}" 
@@ -81,14 +84,14 @@
                     <label  class="col-form-label">所在地</label>
                   </div>
                   <div class="col-4">
-                    <select v-model="actLoc.prov" @change="actLoc.city=0"
+                    <select v-model="actLoc.prov" @change="changeLoc(0)"
                     class="form-select form-select" aria-label=".form-select-sm example">
                     <option disabled value="-1">请选择省份</option>
                     <option v-for="(v, i) in locInfo" :key="i" :value="i">{{v.name}}</option>
                     </select> 
                   </div>
                   <div class="col-4">
-                    <select :disabled="!(actLoc.prov>=0)" v-model="actLoc.city"
+                    <select :disabled="!(actLoc.prov>=0)" v-model="actLoc.city" @change="changeLoc(1)"
                     class="form-select form-select" aria-label=".form-select-sm example">
                     <option disabled value="-1">请选择市/区</option>
                     <option v-for="(v,i) in optCities" :key="i" :value="i">{{v}}</option>
@@ -260,12 +263,36 @@ export default {
     logoutClick () {
       this.$refs.closeModal.click()
       setTimeout(()=>{this.$router.push("/login")}, 200)  
-    }  
+    },
+    changeLoc (select) {
+      if (!select) this.actLoc.city = 0
+      this.rLoc(1, this.actLoc.prov, this.actLoc.city)
+    },
+    // 获取/修改地址
+    rLoc (mode,prov,city) {
+      fetch(`/api/user/reqLoc?mode=${mode}&prov=${prov}&city=${city}`)
+      .then(res=>res.json()
+      .then(data=>{
+        console.log(data)
+        if (!data.err) {
+          if (!mode) {
+            this.actLoc.prov = data.loc[0]
+            this.actLoc.city = data.loc[1]
+          }
+          this.getWeather(this.locInfo[this.actLoc.prov].eng)
+        } else alert(data.msg)
+      }))
+    },
+    //获取天气状况
+    getWeather (prov) {
+      this.$fetchJsonp(`http://flash.weather.com.cn/wmaps/xml/beijing.xml`)
+.then(response => res.json() )
+.then(data => console.log(data))
+    }
   },
   mounted () {
-    console.log(this.locInfo)
-    console.log(this.actLoc.prov>=0)
-  }
+    this.rLoc(0)
+  },
 }
 </script>
 

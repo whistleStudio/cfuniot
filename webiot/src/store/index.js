@@ -22,7 +22,6 @@ const store = new Vuex.Store({
     graCache: [],
     /* 当前页面缓存数据 idx0-7数值idx8会话*/
     pageData: [],
-
   },
   getters: {
     _idArr: function (state) {

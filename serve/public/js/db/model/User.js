@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   avatar: {type: Number, default: 0},
   school: {type: String, default: ""},
   pmail: {type: String, default: ""},
-  loc: {type: String, default: "江苏_南京"}
+  loc: {type: Array, default: [10,0]}
 })
 
 function genCode () {

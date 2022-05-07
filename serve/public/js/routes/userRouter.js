@@ -129,6 +129,25 @@ function genCode () {
   return code.slice(0,10)
 }
 
+/* 获取地址 */
+rt.get("/reqLoc", (req, res) => {
+  let mail = req.userx.name
+  let mode = parseInt(req.query.mode), loc = [parseInt(req.query.prov), parseInt(req.query.city)]  
+  ;(async ()=>{
+    try {
+      let doc = await User.findOne({mail}, "loc")
+      if (doc) {
+        if (mode) {
+          let q = await User.updateOne({mail}, {loc} )
+          if(q.modifiedCount) res.json({err:0})
+          else res.json({err:2, msg:"数据库同步失败"})
+        } else {
+          res.json({err:0, loc: doc.loc})
+        }
+      } else res.json({err:2, msg:"用户信息有误"})
+    } catch(e){console.log(e); res.json({err:5, msg:"database error"})}
+  })()
+})
 
 
 module.exports = rt
