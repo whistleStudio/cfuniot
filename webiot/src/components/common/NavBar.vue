@@ -2,8 +2,8 @@
   <div>
     <div id="navbar">
       <div>{{reqLoc.prov}}  {{reqLoc.city}} 
-        <img src="" alt="">
-        <span id="weather"></span> <span id="tem2"></span>℃ - <span id="tem1"></span>℃
+        <img :src="`http://www.weather.com.cn/m/i/weatherpic/29x20/d${cityWea.staNum}.gif`" alt="">
+        <span id="weather">&nbsp;&nbsp;{{cityWea.staStr}}</span> <span id="tem2">{{cityWea.tem2}}</span>℃ - <span id="tem1">{{cityWea.tem1}}</span>℃
       </div>
       <div>
       <span>{{curName}}</span>
@@ -159,6 +159,12 @@ export default {
         prov: -1,
         city: -1
       },
+      cityWea: {
+        tem1: "",
+        tem2: "",
+        staNum: 1,
+        staStr: ""
+      }
     }
   },
   computed: {
@@ -181,6 +187,7 @@ export default {
     optCities: function () {
       return this.actLoc.prov>=0 ? this.locInfo[this.actLoc.prov].city : []
     },
+    //页面显示的省市中文名，市应与请求xml一致
     reqLoc: function () {
       let o = {}, prov="", city=""
       if (this.actLoc.prov>=0) {
@@ -283,11 +290,31 @@ export default {
         } else alert(data.msg)
       }))
     },
-    //获取天气状况
+    //获取省天气状况
     getWeather (prov) {
-      this.$fetchJsonp(`http://flash.weather.com.cn/wmaps/xml/beijing.xml`)
-.then(response => res.json() )
-.then(data => console.log(data))
+      fetch(`/wmaps/xml/${prov}.xml`)
+      .then(res => res.text())
+      .then(data => {
+        this.getCityWeather(data)
+      })
+    },
+    //解析市天气信息
+    getCityWeather (data) {
+      let {city} = this.reqLoc
+      let regStr = `cityname="${city}"([\\s\\S]+?)temNow`
+      let reg = RegExp(regStr)
+      let info = data.match(reg)[1]
+      if (info) {
+        let regTem1 = /tem1="(.+?)"/, regTem2 = /tem2="(.+?)"/,
+            regStaNum = /state1="(.+?)"/, regStaStr = /stateDetailed="(.+?)"/
+        this.cityWea = {
+          tem1: info.match(regTem1)[1],
+          tem2: info.match(regTem2)[1],
+          staNum: info.match(regStaNum)[1],
+          staStr: info.match(regStaStr)[1]
+        }
+      }
+      // console.log(this.cityWea)
     }
   },
   mounted () {

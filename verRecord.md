@@ -131,3 +131,7 @@ gzip插件添加，vue也改外部引入
 ### [05071734]
 地址读写
 安装fetchJsonp
+### [05091731]
+xml获取成功，开发环境；生产环境，估计需要nginx代理
+相应UI显示；
+broker监测subsrcibe行为

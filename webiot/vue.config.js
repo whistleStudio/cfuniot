@@ -19,19 +19,19 @@ module.exports = {
         "utils": "@/utils"
       }
     },
-    optimization: {
-      minimize: true,
-      minimizer: [
-        new TerserPlugin({
-          terserOptions: {
-            compress: {
-              drop_console: true, // 默认false，设置为true, 则会删除所有console.* 相关的代码。
-              pure_funcs: ["console.log"], // 单纯禁用console.log
-            }
-          }
-        })
-      ]
-    },
+    // optimization: {
+    //   minimize: true,
+    //   minimizer: [
+    //     new TerserPlugin({
+    //       terserOptions: {
+    //         compress: {
+    //           drop_console: true, // 默认false，设置为true, 则会删除所有console.* 相关的代码。
+    //           pure_funcs: ["console.log"], // 单纯禁用console.log
+    //         }
+    //       }
+    //     })
+    //   ]
+    // },
     externals: {
       Vue: "Vue",
       VueRouter: "VueRouter",
@@ -51,7 +51,12 @@ module.exports = {
         pathRewrite: {
           "^/api": ""
         }
-      }
+      },
+      "/wmaps/xml": {
+        target: "http://flash.weather.com.cn",
+        ws: true,
+        changeOrigin: true,
+      },
     }
   }
 }

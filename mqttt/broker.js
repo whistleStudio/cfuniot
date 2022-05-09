@@ -7,6 +7,15 @@ const Device = require('./db/model/Device')
 const Topic = require('./db/model/Topic')
 const WebSvId = 'cfweb1013'
 const WebPwd = 'cfunworld666'
+const fs = require("fs")
+const http = require("http")
+
+let cityJson 
+fs.readFile("city.json", (err, data)=>{
+  try {
+    if(!err) {cityJson = JSON.parse(data).info}
+  } catch(e){console.log(e)}  
+})
 
 server.listen(port, function () {
   console.log('server started and listening on port ', port)
@@ -30,6 +39,38 @@ aedes.on('clientDisconnect', client => {
       changeDevState(client, 0).catch(e => {console.log('clientDisconnect: error')})
     }
   }
+})
+
+/* 天气 */
+aedes.on('subscribe', (sub, client) => {
+  if (client.id !== "cfweb1013") {
+    let clientInfo = sub[0].topic.split("/")
+    let name = clientInfo[0], top = clientInfo[2]
+    if (top === "weather") {
+      ;(async()=>{
+        try {
+          let doc = await User.findOne({name}, "loc")
+          if (doc) {
+            let prov = doc.loc[0], city = doc.loc[1]
+            // console.log(cityJson[prov])
+            http.get(`http://flash.weather.com.cn/wmaps/xml/${cityJson[prov].eng}.xml`, res=>{
+              let info
+              // called when a data chunk is received.
+              res.on('data', (chunk) => {
+                info += chunk;
+              });
+              // called when the complete response is received.
+              res.on('end', () => {
+                console.log(info);
+              });
+            }).on("error", err=>console.log(err))
+          }
+        } catch(e) {console.log(e);}
+      })()
+    }
+  }
+
+  // console.log("sub--",topic)
 })
 
 
@@ -68,7 +109,7 @@ aedes.authenticate = function (client, username, password, callback) {
 /* 发布频率限制 */
 aedes.authorizePublish = function (client, packet, cb) {
   if (client.id !== WebSvId) {
-    console.log(client.id, packet.topic)
+    // console.log(client.id, packet.topic)
     let freq = 1000, topType = 1
     ;(async () => {
       let auth = await freqLimit(client.id, topType, freq)
@@ -95,14 +136,14 @@ freq（ms）
 */
 async function freqLimit (client, topType, freq) {
   let doc = await Topic.findOne({client, topType})
-  console.log('publimit',doc)
+  // console.log('publimit',doc)
   if (!doc) {
     Topic.create({client, topType})
     return null
   }else {
     let curDate = new Date()
     let preT = doc.regDate.getTime(), curT = curDate.getTime()
-    console.log(curT, '-', preT, '=', curT-preT)
+    // console.log(curT, '-', preT, '=', curT-preT)
     if (curT - preT > freq) {
       await Topic.updateOne({client, topType}, {regDate: curDate})
       return null
@@ -123,4 +164,6 @@ async function changeDevState(client, sta) {
     }
   } catch(e) {console.log(e)}
 }
+
+/* 修正city */
 
