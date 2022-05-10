@@ -21,8 +21,6 @@ server.listen(port, function () {
   console.log('server started and listening on port ', port)
 })
 
-// aedes.on('publish', res => {console.log('pub - ', res)})
-// aedes.on('subscrible', res => {console.log('sub - ', res)})
 /* 设备状态：在线 */
 aedes.on('clientReady', client => {
   if (client.id !== WebSvId) {
@@ -40,39 +38,6 @@ aedes.on('clientDisconnect', client => {
     }
   }
 })
-
-/* 天气 */
-aedes.on('subscribe', (sub, client) => {
-  if (client.id !== "cfweb1013") {
-    let clientInfo = sub[0].topic.split("/")
-    let name = clientInfo[0], top = clientInfo[2]
-    if (top === "weather") {
-      ;(async()=>{
-        try {
-          let doc = await User.findOne({name}, "loc")
-          if (doc) {
-            let prov = doc.loc[0], city = doc.loc[1]
-            // console.log(cityJson[prov])
-            http.get(`http://flash.weather.com.cn/wmaps/xml/${cityJson[prov].eng}.xml`, res=>{
-              let info
-              // called when a data chunk is received.
-              res.on('data', (chunk) => {
-                info += chunk;
-              });
-              // called when the complete response is received.
-              res.on('end', () => {
-                console.log(info);
-              });
-            }).on("error", err=>console.log(err))
-          }
-        } catch(e) {console.log(e);}
-      })()
-    }
-  }
-
-  // console.log("sub--",topic)
-})
-
 
 /* 客户端连接时验证（按序）
 1 用户名和通讯秘钥匹配
@@ -109,7 +74,6 @@ aedes.authenticate = function (client, username, password, callback) {
 /* 发布频率限制 */
 aedes.authorizePublish = function (client, packet, cb) {
   if (client.id !== WebSvId) {
-    // console.log(client.id, packet.topic)
     let freq = 1000, topType = 1
     ;(async () => {
       let auth = await freqLimit(client.id, topType, freq)
@@ -165,5 +129,86 @@ async function changeDevState(client, sta) {
   } catch(e) {console.log(e)}
 }
 
-/* 修正city */
+/* 天气 */
+aedes.on('subscribe', (sub, client) => {
+  if (client.id !== "cfweb1013") {
+    let clientInfo = sub[0].topic.split("/")
+    let name = clientInfo[0], did = clientInfo[1], top = clientInfo[2]
+    if (top === "CWea") {
+      ;(async()=>{
+        try {
+          let doc = await User.findOne({name}, "loc")
+          if (doc) {
+            let prov = doc.loc[0], city = doc.loc[1]
+            city = modifyCity(cityJson[prov].city[city])
+            http.get(`http://flash.weather.com.cn/wmaps/xml/${cityJson[prov].eng}.xml`, res=>{
+              let info
+              // 开始
+              res.on('data', (chunk) => {
+                info += chunk;
+              });
+              // 结束
+              res.on('end', () => {
+                try {
+                  let cityWea = parseWeather(info, city)
+                  let weaBuf = pubBuf(cityWea)
+                  if (weaBuf) {
+                    console.log(weaBuf)
+                    setTimeout(()=>{
+                    aedes.publish({topic:`${name}/${did}/CWea`, payload:weaBuf, retain:false},err=>{
+                      console.log(err)
+                    })
+                    },500)
+                  }
+                } catch(e){console.log("weapub error", e)}
+              });
+            }).on("error", err=>console.log(err))
+          }
+        } catch(e) {console.log(e);}
+      })()
+    }
+  }
+})
 
+/* 修正city */
+function modifyCity (city) {
+  let reg2 = /(.+)(市|县|盟|镇|区|州|地区)/
+  let reg3 = /新区/
+  if (city.length > 2) {
+    if (reg2.test(city)&&!reg3.test(city)){
+      city = city.match(reg2)[1]
+    }
+  }
+  return city
+}
+
+/* 解析天气 */
+function parseWeather (info,city) {
+  let regStr = `cityname="${city}"([\\s\\S]+?)windState`
+  let reg = RegExp(regStr)
+  info = info.match(reg)[1]
+  if (info) {
+    let regTem1 = /tem1="(.+?)"/, regTem2 = /tem2="(.+?)"/,
+        regStaNum = /state1="(.+?)"/, regTemNow = /temNow="(.+?)"/
+    // 当前温度，天气，最低，最高
+    let cityWea = [
+      parseInt(info.match(regTemNow)[1]),
+      parseInt(info.match(regStaNum)[1]),
+      parseInt(info.match(regTem2)[1]),
+      parseInt(info.match(regTem1)[1]),
+    ]
+    return cityWea
+  } else return false 
+} 
+
+/* 转化成可用的publish buffer */
+function pubBuf (arr) {
+  arr = Buffer.from(new Float32Array(arr).buffer)
+  // byteOffset
+  let numArr = [].slice.call(new Uint8Array(arr.buffer, arr.byteOffset, arr.length))
+  // reset Uint8 ArrayBuffer
+  let b = new Uint8Array(numArr).buffer
+  // get buffer
+  return Buffer.from(b)
+  
+}

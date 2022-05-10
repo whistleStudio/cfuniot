@@ -135,3 +135,6 @@ gzip插件添加，vue也改外部引入
 xml获取成功，开发环境；生产环境，估计需要nginx代理
 相应UI显示；
 broker监测subsrcibe行为
+### [05101103]
+broker监听订阅CWea 返回[当前温度，天气，最低温度， 最高温度]
+u1,u2 pcomment改require懒加载

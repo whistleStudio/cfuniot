@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import PComment from "components/private/PComment"
+const PComment = res => require(["components/private/PComment"], res)
 import throttle from "utils/throttle"
 import getTextLen from "utils/getTextLen"
 export default {

@@ -82,7 +82,7 @@
 </template>
 
 <script>
-const PComment = () => import("components/private/PComment")
+const PComment = res => require(["components/private/PComment"], res)
 import genWorkbook from "utils/genWorkbook"
 
 export default {

@@ -21,4 +21,6 @@ let regStr = `cityname="${city}"([\\s\\S]+?)temNow`
 let reg = RegExp(regStr)
 // let reg = /cityname="朝阳"([\s\S]+?)temNow/
 
-console.log(str.match(reg)[1])
+// console.log(str.match(reg)[1])
+let a = [1,]
+console.log(a.length)

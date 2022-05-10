@@ -3,7 +3,7 @@
     <div id="navbar">
       <div>{{reqLoc.prov}}  {{reqLoc.city}} 
         <img :src="`http://www.weather.com.cn/m/i/weatherpic/29x20/d${cityWea.staNum}.gif`" alt="">
-        <span id="weather">&nbsp;&nbsp;{{cityWea.staStr}}</span> <span id="tem2">{{cityWea.tem2}}</span>℃ - <span id="tem1">{{cityWea.tem1}}</span>℃
+        <span id="weather">&nbsp;&nbsp;{{cityWea.staStr}}</span> <span id="tem2">{{cityWea.tem2+'℃'}}</span> - <span id="tem1">{{cityWea.tem1+'℃'}}</span>
       </div>
       <div>
       <span>{{curName}}</span>
@@ -340,6 +340,9 @@ export default {
     height: 80px;
     margin-left: 280px;
     font: 20px/80px sans-serif;
+  }
+  #navbar>div:first-of-type span {
+    color: rgb(100,100,100);
   }
   #navbar>div:last-of-type {
     height: 80px;
