@@ -138,3 +138,5 @@ broker监测subsrcibe行为
 ### [05101103]
 broker监听订阅CWea 返回[当前温度，天气，最低温度， 最高温度]
 u1,u2 pcomment改require懒加载
+### [05201511]
+使用阿里云对象存储外链
