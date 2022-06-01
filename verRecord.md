@@ -140,3 +140,5 @@ broker监听订阅CWea 返回[当前温度，天气，最低温度， 最高温�
 u1,u2 pcomment改require懒加载
 ### [05201511]
 使用阿里云对象存储外链
+### [06011732]
+为了适配微信小程序，修改了server里的路由拦截,小程序没有cookie,改用headers里的authorization字段去提取token

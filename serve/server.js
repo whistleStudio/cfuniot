@@ -20,10 +20,12 @@ const cookieParser = require('cookie-parser')
 app.use(cookieParser())
 // 解析token获取用户信息
 app.use(['/user','/dev','/ctrl','/data'], function(req, res, next) {
-	var token = req.headers['authorization']||'Cfun '+req.cookies.token
+	var token = req.cookies.token || req.headers['authorization']
+	console.log(token)
 	if(token == undefined){
 		return next();
 	}else{
+		token = "Cfun " + token
 		verToken.verToken(token).then((data)=> {
 			req.userx = data;
 			return next();
