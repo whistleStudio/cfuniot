@@ -142,3 +142,6 @@ u1,u2 pcomment改require懒加载
 使用阿里云对象存储外链
 ### [06011732]
 为了适配微信小程序，修改了server里的路由拦截,小程序没有cookie,改用headers里的authorization字段去提取token
+### [06061742]
+去了个烦人的consolelog
+待解决问题: 权限不够时,应当不显示且无法操作多出设备
