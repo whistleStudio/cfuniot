@@ -20,6 +20,7 @@ rt.post('/reqData', (req, res) => {
 })
 
 rt.post('/reqMsg', (req, res) => {
+  console.log(req.body)
   // let user = req.userx.name
   let {_id} = req.body
   Device.findOne({_id}, (err, doc) => {
