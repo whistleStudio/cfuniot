@@ -30,14 +30,31 @@ aedes.on('clientReady', client => {
   }
 })
 
-/* 设备状态：离线 */
+/* 设备状态：离线(正常主动断开) */
 aedes.on('clientDisconnect', client => {
   if (client.id !== WebSvId) {
     if (!client.connected) {
+      console.log(`${new Date}: ${client.id} clientDisConnect`)
       changeDevState(client, 0).catch(e => {console.log('clientDisconnect: error')})
     }
   }
 })
+
+/* 设备状态：离线(异常心跳包断开) */
+aedes.on("keepaliveTimeout", client => {
+  if (client.id !== WebSvId) {
+    console.log(`${new Date}: ${client.id} keepaliveTimeout`)
+  }
+})
+
+/* 设备状态： 错误*/
+aedes.on("clientError", (client, err) => {
+  if (client.id !== WebSvId) {
+    console.log(`${new Date}: ${client.id} clientError`)
+    console.log("err:", err)
+  } 
+})
+
 
 /* 客户端连接时验证（按序）
 1 用户名和通讯秘钥匹配
@@ -47,7 +64,6 @@ aedes.authenticate = function (client, username, password, callback) {
   var clientInfo = client.id.split('/')
   var auth = false
   if(password) {
-    console.log(client.id, password.toString())
     if (client.id === WebSvId && password.toString() === WebPwd) {
       callback(null, true)
       console.log('web connect')
@@ -61,7 +77,7 @@ aedes.authenticate = function (client, username, password, callback) {
             let doc2 = await Device.findOne({user:doc.mail, did:did})
             if (doc2) {
               auth = true
-              console.log(`${new Date()}: ${username} - ${client.id} connected`)
+              console.log(`${new Date()}: ${client.id} connected`)
             }
           }
           callback(null, auth)
