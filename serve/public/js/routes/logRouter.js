@@ -10,7 +10,6 @@ rt.post('/', (req, res) => {
     if (doc) {
       doc.logDate = new Date()
       doc.save()
-      // console.log(doc)
       let us = mail
       let usid = pwd + doc.logDate.toString()
       setToken.setToken(us,usid).then((data)=>{
@@ -23,8 +22,6 @@ rt.post('/', (req, res) => {
       res.json({err:1, msg:'用户名或密码错误请重新登录'})
     }
   })
-  
-  
 })
 
 module.exports = rt

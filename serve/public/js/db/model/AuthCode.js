@@ -4,7 +4,7 @@ const authSchema = new mongoose.Schema({
   code: String,
   auth: Number,
   authExp: Number,
-  genDate: {type: Date, default: new Date(), expires: 3600*24*7}
+  genDate: {type: Date, default: new Date(), expires: 3600*24*365}
 })
 const AuthCode = mongoose.model('authcode', authSchema)
 

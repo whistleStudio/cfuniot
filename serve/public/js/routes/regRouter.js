@@ -30,7 +30,7 @@ rt.get('/checkVal', (req, res) => {
 rt.get('/sendMail', (req, res) => {
   let {mail} = req.query
   let vcode = hash(new Date()).slice(0,6)
-  MailV.create({mail, vcode}, (err, doc) => {
+  MailV.create({mail, vcode, tempDate: new Date()}, (err, doc) => {
     if(err) console.log(err)
   })
   ;(async () => {
@@ -53,8 +53,8 @@ rt.post('/regSubmit', (req, res) => {
         let v1 = await User.findOne({name})
         let v2 = await User.findOne({mail})
         if(!(v1||v2)) {
-          await User.create({name, pwd, mail})
-          await Device.create({user:mail, name:"创趣小屋", did:1})
+          await User.create({name, pwd, mail, regDate: new Date(), authDate: new Date()})
+          await Device.create({user:mail, name:"创趣小屋", did:1, regDate: new Date()})
           res.json({err:0, msg:'注册成功, 页面将在3秒后跳转'})
         }
         else res.json({err:1, msg:'用户名或邮箱已存在, 请更换'})      

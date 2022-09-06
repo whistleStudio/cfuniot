@@ -27,7 +27,7 @@ rt.post('/regDev', (req, res) => {
     ;(async function () {
       let devList = await Device.find({user})
       if (devList.length < auth+1) {
-        await Device.create({user, name, did})
+        await Device.create({user, name, did, regDate: new Date()})
         res.json({err: 0})
       } else res.json({err:2, val: `当前用户可注册${auth+1}个设备`})
     })()
