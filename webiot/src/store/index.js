@@ -22,6 +22,8 @@ const store = new Vuex.Store({
     graCache: [],
     /* 当前页面缓存数据 idx0-7数值idx8会话*/
     pageData: [],
+    /* 仪表盘配置 */
+    panelSettings: []
   },
   getters: {
     _idArr: function (state) {
@@ -42,6 +44,7 @@ const store = new Vuex.Store({
         state.graCache.push(Array(8).fill(0).map(e => Array()))
         state.pageData.push(Array(8).fill('').concat('wait message...'))
         state.curBtnMode.push(Array(4).fill(0))
+        state.panelSettings.push(Array(4).fill(0).map(e => {let o = {show: false, title:"", unit:"", min:0, max:100};return o}))
       }
       state.dataResetOk = 1
     },
@@ -53,6 +56,7 @@ const store = new Vuex.Store({
       state.graCache.push(Array(8).fill(0).map(e => Array()))
       state.pageData.push(Array(8).fill('').concat('wait message...'))
       state.curBtnMode.push(Array(4).fill(0))
+      state.panelSettings.push(Array(4).fill(0).map(e => {let o = {show:false, title:"", unit:"", min:0, max:100};return o}))
     },
     delDev (state, idx) {
       state.curBtns.splice(idx, 1)
@@ -63,6 +67,7 @@ const store = new Vuex.Store({
       state.graCache.splice(idx, 1)
       state.pageData.splice(idx, 1)   
       state.curBtnMode.splice(idx, 1)  
+      state.panelSettings.splice(idx, 1)
     },
     changeVal (state, pl) {
       state[pl.k] = pl.v

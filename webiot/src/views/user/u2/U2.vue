@@ -82,24 +82,52 @@
       <span>仪表盘</span>
       <div id="panel-check">
         <div class="form-check" v-for="(v, i) in 4" :key="i">
-          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"
+          @click="panelCheckClick(i)" disabled>
           <label class="form-check-label" for="flexCheckDefault">{{String.fromCharCode(65+i)}}</label>
         </div>
       </div>
       <ul id="panel">
-        <li>
-          <div class="panel-gra"></div>
-          <div class="panel-data"></div>
+        <li v-for="(v, i) in 4" :key="i" >
+          <div >
+            <div class="panel-gra" ref="pg"></div>
+            <div class="panel-data" @click="panelSetIdx=i" data-bs-toggle="modal" data-bs-target="#panelSetModal">
+              <span>数据{{String.fromCharCode(65+i)}}</span>
+              <div class="setpanel"></div>
+            </div>
+          </div>
         </li>
       </ul>
     </div>
     <p-comment :c_actDid="actDid" v-if="$store.state.dataResetOk"/>
+    <!-- panel set Modal -->
+    <div class="modal fade" id="panelSetModal"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="staticBackdropLabel">数据{{String.fromCharCode(65+panelSetIdx)}}-仪表盘设置</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div v-for="(v,i) in panelSetTag" :key="i" class="input-group input-group-sm mb-3">
+        <span class="input-group-text">{{v}}</span>
+        <input type="text" class="form-control" aria-label="Sizing example input">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+      <button type="button" class="btn btn-primary">确定</button>
+    </div>
+    </div>
+    </div>
+    </div>
   </div>
 </template>
 
 <script>
 const PComment = res => require(["components/private/PComment"], res)
 import genWorkbook from "utils/genWorkbook"
+import {mapState} from "vuex"
 
 export default {
   data () {
@@ -107,6 +135,7 @@ export default {
       collapseFlag: 1,
       graShowFlag: 0,
       myGraph: undefined,
+      panelGraph: [], panelSetIdx: 0, panelSetTag: ["主题", "单位", "最小值", "最大值"],
       timGra: 0,
       actDataIdx: 0,
       excelInfo: {
@@ -132,7 +161,9 @@ export default {
     timData: function () {return this.$store.state.timData},
     haveDev: function () {return this.curDevs.length},
     pageData: function () {return this.$store.state.pageData},
-    graCache: function () {return this.$store.state.graCache}    
+    graCache: function () {return this.$store.state.graCache},
+    ...mapState(["panelSettings"])
+
   },
   components: {
     "p-comment": PComment
@@ -322,7 +353,74 @@ export default {
       // myGraph.clear()
       option && this.myGraph.setOption(option)   
     },
-
+    /* 仪表盘多选框点击 */
+    panelCheckClick (i) {
+      this.panelGraph[i] = this.$echarts.init(this.$refs.pg[i])
+      this.drawPanel(i)
+    },
+    /* 绘制仪表盘 */
+    drawPanel (i) {
+      console.log(this.panelGraph[i])
+      var option = {
+        series: [
+          {
+            type: 'gauge',
+            min: 0,
+            max: 1023,
+            minInterval: 1,
+            axisLine: {
+              lineStyle: {
+                width: 15,
+                color: [
+                  [0.3, '#67e0e3'],
+                  [0.7, '#37a2da'],
+                  [1, '#fd666d']
+                ]
+              }
+            },
+            pointer: {
+              itemStyle: {
+                color: 'auto'
+              }
+            },
+            axisTick: {
+              distance: -15,
+              length: 8,
+              lineStyle: {
+                color: '#fff',
+                width: 1
+              }
+            },
+            splitLine: {
+              distance: -15,
+              length: 15,
+              lineStyle: {
+                color: '#fff',
+                width: 3
+              }
+            },
+            axisLabel: {
+              formatter (val) {return parseInt(val)},
+              color: 'auto',
+              distance: 25,
+              fontSize: 11
+            },
+            detail: {
+              valueAnimation: true,
+              formatter: '{value} km/h',
+              color: 'auto',
+              fontSize: 20
+            },
+            data: [
+              {
+                value: 70
+              }
+            ]
+          }
+        ]
+      };
+      option && this.panelGraph[i].setOption(option)    
+    }
   },
   created () {
     console.log("u2 created")
@@ -337,4 +435,4 @@ export default {
 }
 </script>
 
-<style scoped src="views/user/u2/u2.css"></style>
+<style scoped src="views/user/u2/u2.scss" lang="scss"></style>
