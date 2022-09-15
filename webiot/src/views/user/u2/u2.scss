@@ -141,34 +141,35 @@ $fontF: "微软雅黑","Micosoft Yahei","Micosoft YaHei","sans-serif";
     display: flex;
     flex-wrap: wrap;
     >li {
-      width: 450px;
-      height: 320px;
-      background-color: gray;
-      position: relative;
-      &:not(:nth-child(2n)) {
-        margin-right: 80px;
-      }
-      .panel-gra {
+      .panel-main {
         width: 450px;
-        height: 300px;
-        background-color: yellow;
-      }
-      .panel-data {
-        position: absolute;
-        color: rgb(50,50,50);
-        font: 14px/20px $fontF;
-        top: 15px;
-        left: 0;
-        cursor: pointer;
-        .setpanel {
-          margin-left: 5px;
-          display: inline-block;
-          vertical-align: bottom;
-          width: 20px;
-          height: 20px;
-          background: url("~img/u2/setpanel.png") center/contain no-repeat;
+        height: 320px;
+        background-color: gray;
+        position: relative;
+        margin-right: 20px;
+        .panel-gra {
+          width: 450px;
+          height: 300px;
+          background-color: yellow;
+        }
+        .panel-data {
+          position: absolute;
+          color: rgb(50,50,50);
+          font: 14px/20px $fontF;
+          top: 15px;
+          left: 0;
+          cursor: pointer;
+          .setpanel {
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: bottom;
+            width: 20px;
+            height: 20px;
+            background: url("~img/u2/setpanel.png") center/contain no-repeat;
+          }
         }
       }
     }
+
   }
 }

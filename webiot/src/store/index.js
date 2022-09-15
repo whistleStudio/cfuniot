@@ -109,6 +109,10 @@ const store = new Vuex.Store({
           Vue.set(state.pageData[k], 8, v)
         } catch (e) {}
       }      
+    },
+    /* 改变仪表值 */
+    changePanelVal ({panelSettings}, {devIdx, dataIdx, k, v}) {
+      panelSettings[devIdx][dataIdx][k] = v
     }
   }
 })

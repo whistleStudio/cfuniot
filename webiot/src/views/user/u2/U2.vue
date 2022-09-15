@@ -83,13 +83,13 @@
       <div id="panel-check">
         <div class="form-check" v-for="(v, i) in 4" :key="i">
           <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"
-          @click="panelCheckClick(i)" disabled>
+          @click="panelCheckClick(i)" :disabled="!(haveDev&&dataState[actDataIdx][i])" :checked="panelSettings[actDataIdx][i].show">
           <label class="form-check-label" for="flexCheckDefault">{{String.fromCharCode(65+i)}}</label>
         </div>
       </div>
       <ul id="panel">
-        <li v-for="(v, i) in 4" :key="i" >
-          <div >
+        <li v-for="(v, i) in 4" :key="i" ref="pan">
+          <div class="panel-main" v-if="panelSettings[actDataIdx][i].show">
             <div class="panel-gra" ref="pg"></div>
             <div class="panel-data" @click="panelSetIdx=i" data-bs-toggle="modal" data-bs-target="#panelSetModal">
               <span>数据{{String.fromCharCode(65+i)}}</span>
@@ -181,6 +181,15 @@ export default {
         let title = this.actName + "-数据" + String.fromCharCode(65+n)
         this.drawGraph(title, this.graCache[this.actDataIdx][i]) 
       }
+      setTimeout(()=>{
+        for(let i=0; i<4; i++) {
+          if (this.panelSettings[this.actDataIdx][i].show) {
+            this.panelGraph[i] = this.$echarts.init(this.$refs.pan[i].children[0].children[0])
+            this.drawPanel(i)
+          }
+        }        
+      },100)
+
     },
     toggleDataBtn (i, inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
@@ -202,6 +211,8 @@ export default {
             this.graShowFlag = 0
           }catch (e) {console.log('fail-',e)}
         }
+        //清空仪表盘
+        this.$store.commit("changePanelVal", {devIdx:this.actDataIdx, dataIdx:i, k:"show", v:false})
       }
     },
     toggleMsgBtn (inv=2000) {
@@ -355,8 +366,19 @@ export default {
     },
     /* 仪表盘多选框点击 */
     panelCheckClick (i) {
-      this.panelGraph[i] = this.$echarts.init(this.$refs.pg[i])
-      this.drawPanel(i)
+      
+      if (this.panelSettings[this.actDataIdx][i].show) {
+        this.$store.commit("changePanelVal", {devIdx:this.actDataIdx, dataIdx:i, k:"show", v:false})
+      } else {
+        this.$store.commit("changePanelVal", {devIdx:this.actDataIdx, dataIdx:i, k:"show", v:true})
+        setTimeout(()=>{
+          console.log("pccccc-----", i,this.$refs.pan[i])
+          this.panelGraph[i] = this.$echarts.init(this.$refs.pan[i].children[0].children[0])
+          this.drawPanel(i)
+        },50)
+      }
+      
+      
     },
     /* 绘制仪表盘 */
     drawPanel (i) {
