@@ -15,9 +15,11 @@
         type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
       </div>
       <div id="controlNum">
-        <button v-for="(v,i) in btns" :key="i" @click="btnClick(i)"
-        :disabled="!haveDev" :class="{active: curBtns[actCtrlIdx][i]}"
-        type="button" class="btn btn-outline-primary">{{v}}</button>
+        <div v-for="(v,i) in btns" :key="i" class="controller-btn">
+          <button @click="btnClick(i)" @mousedown="btnDown(i)" @mouseup="btnUp(i)"
+          :disabled="!haveDev" :class="{active: curBtns[actCtrlIdx][i]}" type="button" class="btn btn-outline-primary">{{v}}</button>
+          <div class="pin" @click="pinClick(i)" :style="{backgroundImage: `url(${require('img/u1/pin'+curBtnMode[actCtrlIdx][i]+'.png')})`}"></div>
+        </div>
         <div v-for="(v,i) in Array(4)" :key="i+10" class="controller-range">
           <label :for="`customRange${i+1}`" class="form-label">滑杆{{i+1}}&nbsp;&nbsp;&nbsp;<span>[ {{curRans[actCtrlIdx][i]}} ]</span></label>
           <input :disabled="!haveDev" :id="`customRange${i+1}`" 
@@ -49,6 +51,7 @@ export default {
     curRans: function () {return this.$store.state.curRans},
     actDid: function () {return this.$store.state.curDevs[this.actCtrlIdx].did},
     haveDev: function () {return this.$store.state.curDevs.length},
+    curBtnMode () {return this.$store.state.curBtnMode}
   },
   components: {
     "p-comment": PComment
@@ -60,9 +63,26 @@ export default {
     },
     /* 点击按钮 */
     btnClick: throttle(function (i){
-      this.$store.commit("changeBtnVal", {k: "curBtns", i: this.actCtrlIdx, j: i})
-      this.rBtnVal (this.actDid, this.curName)
+      if (this.curBtnMode[this.actCtrlIdx][i]) {
+        this.$store.commit("changeBtnVal", {k: "curBtns", i: this.actCtrlIdx, j: i})
+        this.rBtnVal (this.actDid, this.curName)
+        console.log("pin 1 send")
+      }
     }),
+    btnDown (i) {
+      if (this.curBtnMode[this.actCtrlIdx][i]==0) {
+        this.$store.commit("changeBtnVal", {k: "curBtns", i: this.actCtrlIdx, j: i})
+        this.rBtnVal (this.actDid, this.curName)
+        console.log("pin 0 down")
+      }
+    },
+    btnUp (i) {
+      if (this.curBtnMode[this.actCtrlIdx][i]==0) {
+        this.$store.commit("changeBtnVal", {k: "curBtns", i: this.actCtrlIdx, j: i})
+        this.rBtnVal (this.actDid, this.curName)
+        console.log("pin 0 up")
+      }
+    },
     rBtnVal (did, user) {
       fetch(`/api/ctrl/btnVal`, {
         method: 'POST',
@@ -111,54 +131,14 @@ export default {
         .then(res => res.json()
         .then(data => {}))
       } else alert('发送会话内容不得超过20字节')  
-    })
+    }),
+    /* 按钮模式切换 */
+    pinClick (i) {
+      this.$store.commit("changeBtnVal", {k: "curBtnMode", i: this.actCtrlIdx, j: i})
+    }
   },
-  created () {
 
-  }
 }
 </script>
 
-<style scoped>
-#u1-box {
-  width: 100%;
-}
-#tag {
-  margin-top: 20px;
-  margin-left: 80px;
-}
-#tag a {
-  color: rgb(173, 181, 189);
-}
-#tag .active {
-  color: rgb(77, 212, 172);
-  font-weight: bold;
-}
-#controller {
-  margin-left: 80px;
-  width: 1000px;
-  height: 800px;
-  padding-top: 20px;
-  float: left;
-}
-
-#sendMsgW {
-  margin-top: 30px;
-}
-
-
-#controlNum {
-  margin-top: 50px;
-}
-#controlNum>button {
-  width: 100px;
-  height: 50px;
-  margin-right: 100px;
-}
-.controller-range {
-  margin-top: 50px;
-}
-.controller-range span {
-  color: rgb(61, 141, 233);
-}
-</style>
+<style src="./u1.css" scoped></style>

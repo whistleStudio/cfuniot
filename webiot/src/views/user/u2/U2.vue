@@ -77,6 +77,22 @@
       </div>
     </div>
     <div id="graph" key="gra" ><div ref="gra"></div></div>
+    <!-- 仪表板 -->
+    <div id="panel-box">
+      <span>仪表盘</span>
+      <div id="panel-check">
+        <div class="form-check" v-for="(v, i) in 4" :key="i">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+          <label class="form-check-label" for="flexCheckDefault">{{String.fromCharCode(65+i)}}</label>
+        </div>
+      </div>
+      <ul id="panel">
+        <li>
+          <div class="panel-gra"></div>
+          <div class="panel-data"></div>
+        </li>
+      </ul>
+    </div>
     <p-comment :c_actDid="actDid" v-if="$store.state.dataResetOk"/>
   </div>
 </template>

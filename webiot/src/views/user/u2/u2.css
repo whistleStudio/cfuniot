@@ -124,3 +124,7 @@
 #psGraph:hover, #clearGraph:hover, #excelGraph:hover {
   box-shadow: 1px 1px 2px 1px gray inset;
 }
+
+#panel-box {
+  margin-top: 50px; 
+}

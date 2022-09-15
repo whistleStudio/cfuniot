@@ -13,7 +13,7 @@ const store = new Vuex.Store({
     /* graph */
     timGra: {},
     /* 控制界面信息、按钮、滑杆状态 */
-    curBtns: [], curRans: [],
+    curBtns: [], curRans: [], curBtnMode: [],
     /* 数据监控更新计时器 idx0~7数据A-G idx8会话msg*/
     timData: [],
     /* 数据监控开关状态记录 idx0-3数据A-C idx4-7数据D-G idx8会话框 idx9对应激活图表 */
@@ -41,6 +41,7 @@ const store = new Vuex.Store({
         state.dataState.push(Array(9).fill(0).concat(-1))
         state.graCache.push(Array(8).fill(0).map(e => Array()))
         state.pageData.push(Array(8).fill('').concat('wait message...'))
+        state.curBtnMode.push(Array(4).fill(0))
       }
       state.dataResetOk = 1
     },
@@ -51,6 +52,7 @@ const store = new Vuex.Store({
       state.dataState.push(Array(9).fill(0).concat(-1))
       state.graCache.push(Array(8).fill(0).map(e => Array()))
       state.pageData.push(Array(8).fill('').concat('wait message...'))
+      state.curBtnMode.push(Array(4).fill(0))
     },
     delDev (state, idx) {
       state.curBtns.splice(idx, 1)
@@ -59,11 +61,13 @@ const store = new Vuex.Store({
       state.timData.splice(idx, 1)
       state.dataState.splice(idx, 1)
       state.graCache.splice(idx, 1)
-      state.pageData.splice(idx, 1)     
+      state.pageData.splice(idx, 1)   
+      state.curBtnMode.splice(idx, 1)  
     },
     changeVal (state, pl) {
       state[pl.k] = pl.v
     },
+    //按钮状态 和 按钮模式共用
     changeBtnVal (state, {k,i,j}) {
       Vue.set(state[k][i], j, state[k][i][j]?0:1)
     },

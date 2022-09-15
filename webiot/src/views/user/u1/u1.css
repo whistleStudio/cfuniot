@@ -1,0 +1,55 @@
+#u1-box {
+  width: 100%;
+}
+#tag {
+  margin-top: 20px;
+  margin-left: 80px;
+}
+#tag a {
+  color: rgb(173, 181, 189);
+}
+#tag .active {
+  color: rgb(77, 212, 172);
+  font-weight: bold;
+}
+#controller {
+  margin-left: 80px;
+  width: 1000px;
+  height: 800px;
+  padding-top: 20px;
+  float: left;
+}
+
+#sendMsgW {
+  margin-top: 30px;
+}
+
+
+#controlNum {
+  margin-top: 50px;
+}
+.controller-btn {
+  display: inline-block;
+  width: 140px;
+  height: 50px;
+  margin-right: 100px;
+}
+.controller-btn>button {
+  width: 100px;
+  height: 50px; 
+}
+.controller-btn>.pin {
+  vertical-align: middle;
+  display: inline-block;
+  margin-left: 10px;
+  width: 30px;
+  height: 30px;
+  background: center/contain no-repeat;
+  cursor: pointer;
+}
+.controller-range {
+  margin-top: 50px;
+}
+.controller-range span {
+  color: rgb(61, 141, 233);
+}
