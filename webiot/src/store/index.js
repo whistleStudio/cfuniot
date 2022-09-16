@@ -3,6 +3,7 @@
 import dateFormat from "utils/dateFormat"
 
 Vue.use(Vuex)
+Vue.config.devtools = true
 dateFormat()
 
 const store = new Vuex.Store({
@@ -44,7 +45,7 @@ const store = new Vuex.Store({
         state.graCache.push(Array(8).fill(0).map(e => Array()))
         state.pageData.push(Array(8).fill('').concat('wait message...'))
         state.curBtnMode.push(Array(4).fill(0))
-        state.panelSettings.push(Array(4).fill(0).map(e => {let o = {show: false, title:"", unit:"", min:0, max:100};return o}))
+        state.panelSettings.push(Array(4).fill(0).map(e => {let o = {show: false, title:"", unit:"", min:0, max:100, data:0};return o}))
       }
       state.dataResetOk = 1
     },
@@ -56,7 +57,7 @@ const store = new Vuex.Store({
       state.graCache.push(Array(8).fill(0).map(e => Array()))
       state.pageData.push(Array(8).fill('').concat('wait message...'))
       state.curBtnMode.push(Array(4).fill(0))
-      state.panelSettings.push(Array(4).fill(0).map(e => {let o = {show:false, title:"", unit:"", min:0, max:100};return o}))
+      state.panelSettings.push(Array(4).fill(0).map(e => {let o = {show:false, title:"", unit:"", min:0, max:100, data:0};return o}))
     },
     delDev (state, idx) {
       state.curBtns.splice(idx, 1)

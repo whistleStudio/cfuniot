@@ -1,7 +1,7 @@
 <!-- intro -->
 <template>
   <div id="intro">
-    <iframe src="static/iotguide/iotguide.html" frameborder="0" ref="ifr"
+    <iframe src="https://dict.cfunworld.com/tutorial/iotguide/%E7%89%A9%E8%81%94%E7%BD%91%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97.html" frameborder="0" ref="ifr"
     width="100%"   scrolling="auto"
     ></iframe>
     <div @click="iframeScroll" id="toTop" ></div>
@@ -16,15 +16,10 @@
     },
     methods: {
       iframeScroll () {
-        this.$refs.ifr.contentWindow.scrollTo({top: 0, behavior: 'smooth'})
+        // this.$refs.ifr.contentWindow.scrollTo({top: 0, behavior: 'smooth'})
+        this.$refs.ifr.contentWindow.postMessage("scrollTop",'https://dict.cfunworld.com')
       }
     },
-    components: {},
-    // mounted () {
-    //   this.$refs.ifr.contentWindow.addEventListener("scroll", () => {
-    //     console.log(this.$refs.ifr.contentWindow.scrollY)
-    //   })
-    // }
   }
 </script>
 

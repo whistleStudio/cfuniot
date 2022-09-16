@@ -91,16 +91,17 @@
         <li v-for="(v, i) in 4" :key="i" ref="pan">
           <div class="panel-main" v-if="panelSettings[actDataIdx][i].show">
             <div class="panel-gra" ref="pg"></div>
-            <div class="panel-data" @click="panelSetIdx=i" data-bs-toggle="modal" data-bs-target="#panelSetModal">
+            <div class="panel-data" @click="panelSetClick(i)" data-bs-toggle="modal" data-bs-target="#panelSetModal">
               <span>数据{{String.fromCharCode(65+i)}}</span>
               <div class="setpanel"></div>
             </div>
+            <div class="panel-title">{{panelSettings[actDataIdx][i].title}}</div>
           </div>
         </li>
       </ul>
     </div>
     <p-comment :c_actDid="actDid" v-if="$store.state.dataResetOk"/>
-    <!-- panel set Modal -->
+    <!-- 仪表盘设置模态框 -->
     <div class="modal fade" id="panelSetModal"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
     <div class="modal-content">
@@ -111,12 +112,12 @@
     <div class="modal-body">
       <div v-for="(v,i) in panelSetTag" :key="i" class="input-group input-group-sm mb-3">
         <span class="input-group-text">{{v}}</span>
-        <input type="text" class="form-control" aria-label="Sizing example input">
+        <input type="text" class="form-control" aria-label="Sizing example input" v-model="panelIp[Object.keys(panelIp)[i]]">
       </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-      <button type="button" class="btn btn-primary">确定</button>
+      <button @click="panelModalConfirm(panelSetIdx)" type="button" class="btn btn-primary" data-bs-dismiss="modal">确定</button>
     </div>
     </div>
     </div>
@@ -136,6 +137,9 @@ export default {
       graShowFlag: 0,
       myGraph: undefined,
       panelGraph: [], panelSetIdx: 0, panelSetTag: ["主题", "单位", "最小值", "最大值"],
+      panelIp: {
+        title: "", unit: "", min: "", max: ""
+      },
       timGra: 0,
       actDataIdx: 0,
       excelInfo: {
@@ -308,6 +312,10 @@ export default {
           else num = parseInt(num)
           console.log(num)
           this.$store.commit("changeGraCache", {k: act_id, i: i, v: num, l: this.$store.getters._idArr})
+          if (i<4) {
+            this.$store.commit("changePanelVal", {devIdx: this.actDataIdx, dataIdx: i, k: "data", v: num})
+            if (this.panelSettings[this.actDataIdx][i].show) this.drawPanel(i)
+          }
         } 
       }))
     },
@@ -366,7 +374,6 @@ export default {
     },
     /* 仪表盘多选框点击 */
     panelCheckClick (i) {
-      
       if (this.panelSettings[this.actDataIdx][i].show) {
         this.$store.commit("changePanelVal", {devIdx:this.actDataIdx, dataIdx:i, k:"show", v:false})
       } else {
@@ -382,13 +389,12 @@ export default {
     },
     /* 绘制仪表盘 */
     drawPanel (i) {
-      console.log(this.panelGraph[i])
       var option = {
         series: [
           {
             type: 'gauge',
-            min: 0,
-            max: 1023,
+            min: this.panelSettings[this.actDataIdx][i].min,
+            max: this.panelSettings[this.actDataIdx][i].max,
             minInterval: 1,
             axisLine: {
               lineStyle: {
@@ -429,20 +435,38 @@ export default {
             },
             detail: {
               valueAnimation: true,
-              formatter: '{value} km/h',
+              formatter:  val => {return `${val} ${this.panelSettings[this.actDataIdx][i].unit}`},
               color: 'auto',
               fontSize: 20
             },
             data: [
               {
-                value: 70
+                value: this.panelSettings[this.actDataIdx][i].data
               }
             ]
           }
         ]
       };
       option && this.panelGraph[i].setOption(option)    
-    }
+    },
+    /* 仪表盘配置 */
+    panelSetClick (i) {
+      this.panelSetIdx = i
+      Object.keys(this.panelIp).forEach(k => this.panelIp[k]="")
+    },
+    panelModalConfirm (i) {
+      Object.keys(this.panelIp).forEach(k => {
+        let v = this.panelIp[k].trim()
+        console.log("panelModalConfirm--", k, v)
+        if (k=="min" || k=="max") {
+          v= parseInt(v)
+          if (v.toString()!=="NaN") {
+            this.$store.commit("changePanelVal", {devIdx:this.actDataIdx, dataIdx:i, k, v})
+          } 
+        } else this.$store.commit("changePanelVal", {devIdx:this.actDataIdx, dataIdx:i, k, v})
+        this.drawPanel(i)
+      })
+    },
   },
   created () {
     console.log("u2 created")
