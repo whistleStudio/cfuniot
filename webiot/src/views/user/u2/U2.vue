@@ -200,9 +200,10 @@ export default {
       console.log('---',this.actDataIdx)
       if (this.dataState[this.actDataIdx][i]) {
         let act_id = this.act_id 
+        let actDevIdx = this.actDataIdx
         let t = setInterval(() => {
           // console.log(this.actDid)
-          this.rReqData(i, act_id)
+          this.rReqData(i, act_id, actDevIdx)
         }, inv)
         this.$store.commit("changeArrVal", {k: "timData", v: t, idx:[this.actDataIdx,i]})
       } else {
@@ -292,7 +293,7 @@ export default {
         this.$store.commit("changeMsg", {k: act_id, v: msg, l: this.$store.getters._idArr})
       }))            
     },
-    rReqData (i, act_id) {
+    rReqData (i, act_id, actDevIdx) {
       fetch(`/api/data/reqData`, {
         method: 'POST',
         headers: {
@@ -313,7 +314,7 @@ export default {
           console.log(num)
           this.$store.commit("changeGraCache", {k: act_id, i: i, v: num, l: this.$store.getters._idArr})
           if (i<4) {
-            this.$store.commit("changePanelVal", {devIdx: this.actDataIdx, dataIdx: i, k: "data", v: num})
+            this.$store.commit("changePanelVal", {devIdx: actDevIdx, dataIdx: i, k: "data", v: num})
             if (this.panelSettings[this.actDataIdx][i].show) this.drawPanel(i)
           }
         } 

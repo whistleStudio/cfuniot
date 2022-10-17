@@ -26,7 +26,7 @@
       </form>
       </div>      
     </div>
-    <div id="footer">备案号</div>
+    <div id="footer">备案号 | 苏ICP备16027955号-1</div>
   </div>
 </template>
 

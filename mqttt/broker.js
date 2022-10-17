@@ -90,7 +90,7 @@ aedes.authenticate = function (client, username, password, callback) {
 /* 发布频率限制 */
 aedes.authorizePublish = function (client, packet, cb) {
   if (client.id !== WebSvId) {
-    let freq = 1000, topType = 1
+    let freq = 900, topType = 1
     ;(async () => {
       let auth = await freqLimit(client.id, topType, freq)
       cb(auth) 
@@ -102,7 +102,7 @@ aedes.authorizePublish = function (client, packet, cb) {
 aedes.authorizeSubscribe = function (client, sub, cb) {
   if (client.id !== WebSvId) {
     ;(async () => {
-      let freq = 1000, topType = 2
+      let freq = 900, topType = 2
       let auth = await freqLimit(client.id, topType, freq)
       cb(auth, sub)
     })().catch(e => {console.log('broker: authorizeSubscribe error')})
