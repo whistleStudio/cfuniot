@@ -1,10 +1,10 @@
 <template>
   <div>
     <div id="navbar">
-      <div>{{reqLoc.prov}}  {{reqLoc.city}} 
+      <!-- <div>{{reqLoc.prov}}  {{reqLoc.city}} 
         <img :src="`http://www.weather.com.cn/m/i/weatherpic/29x20/d${cityWea.staNum}.gif`" alt="">
         <span id="weather">&nbsp;&nbsp;{{cityWea.staStr}}</span> <span id="tem2">{{cityWea.tem2+'℃'}}</span> - <span id="tem1">{{cityWea.tem1+'℃'}}</span>
-      </div>
+      </div> -->
       <div>
       <span>{{curName}}</span>
       <div id="profile" :style="{backgroundImage: `url(${require('img/user/av'+curAvatar+'.jpg')})`}" 

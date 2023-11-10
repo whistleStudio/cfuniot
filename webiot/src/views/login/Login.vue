@@ -1,5 +1,5 @@
 <template>
-  <div :style="{backgroundImage: `url(${bgUrls[roll]})`}" id='rootLogin'>
+  <div :style="{backgroundImage: `url(${bgUrl+roll}.jpg)`}" id='rootLogin'>
     <div id="logbox">
       <div id="logshow">
         <div></div>
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import {bgUrls} from "./bgData.json"
+// import {bgUrls} from "./bgData.json"
 
 export default {
   data () {
@@ -39,7 +39,7 @@ export default {
       mail: "",
       pwd: "",
       roll: 1,
-      bgUrls
+      bgUrl: "https://dict.cfunworld.com/img/cfiot/loginbg/bg"
     }
   },
   methods: {
@@ -106,7 +106,7 @@ export default {
 #logshow>div {
   width: 80%;
   height: 80%;
-  background: url("https://s1.ax1x.com/2022/04/28/LOUc38.png") center/contain no-repeat;
+  background: url("https://dict.cfunworld.com/img/cfiot/logincartoon.png") center/contain no-repeat;
 }
 #login {
   width: 450px;

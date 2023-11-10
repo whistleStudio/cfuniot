@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const DbName = 'test'
+const DbName = 'cfiot'
 const PORT = 27017
 
 main().catch(err => console.log(err));

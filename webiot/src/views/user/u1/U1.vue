@@ -21,7 +21,7 @@
           <div class="pin" @click="pinClick(i)" :style="{backgroundImage: `url(${require('img/u1/pin'+curBtnMode[actCtrlIdx][i]+'.png')})`}"></div>
         </div>
         <div v-for="(v,i) in Array(4)" :key="i+10" class="controller-range">
-          <label :for="`customRange${i+1}`" class="form-label">滑杆{{i+1}}&nbsp;&nbsp;&nbsp;<span>[ {{curRans[actCtrlIdx][i]}} ]</span></label>
+          <label :for="`customRange${i+1}`" class="form-label">滑杆{{String.fromCharCode(65+i)}}&nbsp;&nbsp;&nbsp;<span>[ {{curRans[actCtrlIdx][i]}} ]</span></label>
           <input :disabled="!haveDev" :id="`customRange${i+1}`" 
           :value="curRans[actCtrlIdx][i]" @change="changeRan(i, $event)"
           type="range" class="form-range" min="0" max='100' >
@@ -132,9 +132,12 @@ export default {
         .then(data => {}))
       } else alert('发送会话内容不得超过20字节')  
     }),
-    /* 按钮模式切换 */
+    /* 按钮模式切换（图钉📌） */
     pinClick (i) {
       this.$store.commit("changeBtnVal", {k: "curBtnMode", i: this.actCtrlIdx, j: i})
+      // 每次点击图钉都会置0
+      this.$store.commit("changeArrVal", {k: "curBtns", v: 0, idx: [this.actCtrlIdx, i]})
+      this.rBtnVal (this.actDid, this.curName)
     }
   },
 

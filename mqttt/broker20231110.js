@@ -1,4 +1,4 @@
-﻿const aedes = require('aedes')()
+const aedes = require('aedes')()
 const server = require('net').createServer(aedes.handle)
 const port = 1883
 const db = require('./db/connect')
@@ -29,6 +29,7 @@ aedes.on('clientReady', client => {
     }
   }
 })
+
 /* 设备状态：离线(正常主动断开) */
 aedes.on('clientDisconnect', client => {
   if (client.id !== WebSvId) {
@@ -53,6 +54,7 @@ aedes.on("clientError", (client, err) => {
     console.log("err:", err)
   } 
 })
+
 
 /* 客户端连接时验证（按序）
 1 用户名和通讯秘钥匹配
