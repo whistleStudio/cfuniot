@@ -72,6 +72,8 @@
               :href="excelInfo.link"  ref="excelA" :download="excelInfo.name"
               ><span></span></a>
             </div>
+            <!-- 表格上传ip(隐藏) -->
+            <input ref="uploadinput" @change="upIpChange" type="file" style="display: none;">
           </div>
         </div> 
       </div>
@@ -127,7 +129,7 @@
 
 <script>
 const PComment = res => require(["components/private/PComment"], res)
-import genWorkbook from "utils/genWorkbook"
+import {genWorkbook, parseWorkbook} from "utils/solveWorkbook"
 import {mapState} from "vuex"
 
 export default {
@@ -146,7 +148,8 @@ export default {
         disabled: 1,
         name: "",
         link: ""
-      }
+      },
+      uploadVal: null,
     }
   },
   computed: {
@@ -154,7 +157,8 @@ export default {
       return [
         {id: "psGraph", img: `play${this.graShowFlag}.png`},
         {id: "clearGraph", img: "clear.png"},
-        {id: "excelGraph", img: "excel.png"}
+        {id: "excelGraph", img: "excel.png"},
+        {id: "uploadGraph", img: "upload.png"}
       ]
     },
     curDevs: function () {return this.$store.state.curDevs},
@@ -233,12 +237,13 @@ export default {
         if (this.timData[this.actDataIdx][8]) clearInterval(this.timData[this.actDataIdx][8])
       }
     },
+    /* 点击折线图图标 */
     graIconClick (i) {
       switch (i) {
         case 0:
           this.graShowFlag = Number(!this.graShowFlag)
           if (this.graShowFlag) {
-            this.myGraph.clear()
+            if(this.myGraph) this.myGraph.clear()
             clearInterval(this.timGra)            
             let n = this.dataState[this.actDataIdx][9]
             let title = this.actName + "-数据" + String.fromCharCode(65+n)
@@ -275,7 +280,25 @@ export default {
             } catch(e) {console.log(e)}
           })()
           break
+        case 3:
+          this.graShowFlag = 0
+          clearInterval(this.timGra)
+          if (this.myGraph) this.myGraph.clear()
+          this.$refs.uploadinput.click()
+          break
       }
+    },
+    upIpChange () {
+      console.log("change")
+      const upIp = this.$refs.uploadinput
+      // console.log(upIp.files[0])
+      parseWorkbook(upIp.files[0]).then(res => {
+        if (res) {
+          let n = this.dataState[this.actDataIdx][9]
+          let title = this.actName + "-数据" + String.fromCharCode(65+n)
+          this.drawGraph(title, res)
+        } else window.alert("上传数据格式错误！")
+      })
     },
     rReqMsg (act_id) {
       fetch('/api/data/reqMsg', {

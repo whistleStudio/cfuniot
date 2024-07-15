@@ -36,4 +36,37 @@ function fillColor (row, color) {
   })
 }
 
-export default genWorkbook
+/* 解析表格 */
+function parseWorkbook (rawFile) {
+  return new Promise(rsv => {
+    const reader = new FileReader()
+    let res = []
+    try {
+      reader.readAsArrayBuffer(rawFile)
+      reader.onload = function () {
+        ;(async () => {
+          try {
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(this.result);
+            const worksheet = workbook.getWorksheet(1)
+            // console.log(workbook)
+            if (worksheet) {
+              const reg1 = /^([0-9]+)(:|：)([0-9]+)(:|：)([0-9]+)$/, reg2 = /^([0-9]+)$/
+              for (let i = 3; i <= worksheet.rowCount; i++) {
+                let v1 = worksheet.getRow(i).values[1], v2 = worksheet.getRow(i).values[2]
+                if (reg1.test(v1) && reg2.test(v2)) {
+                  res.push([v1, v2])
+                }
+              }
+              console.log("....", worksheet.rowCount, worksheet.getRow(3).values)
+            }
+            rsv(res)
+          } catch(e){console.log("eeee"); rsv(null)}
+        })()
+      }
+    } catch(e){console.log("errr"); rsv(null)}
+  })
+}
+
+
+export { genWorkbook, parseWorkbook }

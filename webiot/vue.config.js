@@ -39,7 +39,6 @@ module.exports = {
       echarts: "echarts",
       marked: "marked",
       ExcelJS: "exceljs"
-
     }
   },
   devServer: {
