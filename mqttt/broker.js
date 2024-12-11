@@ -226,3 +226,20 @@ function pubBuf (arr) {
   return Buffer.from(b)
   
 }
+
+/* 20241211 隔时发布格林威治时间 */
+setInterval(() => {
+  aedes.publish({topic:`cfun/public/CTime`, payload:pubBuf(getUTCTimeArr()), retain:false},err=>{
+    if (err) console.log(err)
+  })
+}, 3000)
+
+/* 获取格林威治时间数组 */
+function getUTCTimeArr () {
+  try {  
+    const a = new Date().toISOString()
+    const reg = /.+-(.+)-(.+)T(.+):(.+):.+/
+    const mG = a.match(reg)
+    return mG.filter((v, i) => i>0 && i<5).map(v => parseInt(v))
+  } catch (e) {return Array(4).fill(0)}
+}
