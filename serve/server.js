@@ -1,7 +1,7 @@
 const express = require("express")
 require('./public/js/db/connect')
 const app = express()
-const PORT = 8082
+const PORT = 8082 // prod: 8080
 const staticPath = __dirname
 let path = require('path')
 
@@ -19,6 +19,7 @@ var verToken = require('./public/js/validate/tokenVerify');
 const cookieParser = require('cookie-parser')
 
 app.use(cookieParser())
+/* --- prod: /api/user ... --- */
 // 解析token获取用户信息
 app.use(['/user','/dev','/ctrl','/data'], function(req, res, next) {
 	var token = req.cookies.token || req.headers['authorization']
@@ -36,6 +37,7 @@ app.use(['/user','/dev','/ctrl','/data'], function(req, res, next) {
 		})
 	}
 });
+/* ------ */
 
 
 
@@ -43,20 +45,22 @@ app.use(['/user','/dev','/ctrl','/data'], function(req, res, next) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use('/reg', express.static(path.join(staticPath, 'public')))
-app.use(express.static(path.join(staticPath, '')))
+app.use(express.static(path.join(staticPath, ''))) // prod: /dist
 
+/* --- prod: /api/login ... --- */
 app.use('/login', logRouter)
 app.use('/user', userRouter)
 app.use('/dev', devRouter)
 app.use('/ctrl', ctrlRouter)
 app.use('/data', dataRouter)
 app.use('/reg', regRouter)
+/* ------ */
+
 app.use('/com', comRouter)
 
 
-
+/* --- prod: 取消注释 --- */
 // app.get("/", (req, res) => {
-// 	// console.log(req.cookies)
 //   res.sendFile(`${staticPath}/index.html`)
 // })
 
