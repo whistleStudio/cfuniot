@@ -11,6 +11,7 @@ const devRouter = require('./public/js/routes/devRouter')
 const ctrlRouter = require('./public/js/routes/ctrlRouter')
 const dataRouter = require('./public/js/routes/dataRouter')
 const regRouter = require('./public/js/routes/regRouter')
+const comRouter = require('./public/js/routes/comRouter')
 userRouter.stp = staticPath
 regRouter.stp = staticPath
 
@@ -50,6 +51,7 @@ app.use('/dev', devRouter)
 app.use('/ctrl', ctrlRouter)
 app.use('/data', dataRouter)
 app.use('/reg', regRouter)
+app.use('/com', comRouter)
 
 
 
