@@ -8,14 +8,15 @@ const cors = require("cors")
 /* --- 天气 --- */
 // 处理客户端天气请求
 rt.get('/weather', cors(), (req, res) => {
+  console.log(`${new Date()}: \n${JSON.stringify(req.headers)} \n${JSON.stringify(req.baseUrl)}`)
   let { adcode } = req.query
   Weather.findOne({adcode}, (err, doc) => {
     if (!err) {
       if (doc) {
         let {city, wea, temp, hum, windpower, winddir} = doc
-        res.json({err:0, city, wea, temp, hum, winddir, windpower})
-      } else res.json({err: 1, msg: "city info err"})
-    } else res.json({err: 5, msg: "database err"})
+        res.json({err: "0", city, wea, temp, hum, winddir, windpower})
+      } else res.json({err: "1", msg: "city info err"})
+    } else res.json({err: "5", msg: "database err"})
   })  
 })
 
@@ -57,10 +58,11 @@ function getAmapWea () {
 
 /* --- 时间 --- */
 rt.get("/time", cors(), (req, res) => {
+  console.log(`${new Date()}: \n${JSON.stringify(req.headers)} \n${JSON.stringify(req.baseUrl)}`)
   let timezone = parseInt(req.query.timezone)
   if (timezone >= -12 && timezone <= 12) {
-    res.json({err: 0, time: getTimeByTimeZone(timezone)})
-  } else res.json({err: 2, msg: "offset err"})
+    res.json({err: "0", time: getTimeByTimeZone(timezone)})
+  } else res.json({err: "2", msg: "offset err"})
 })
 
 function getTimeByTimeZone(offset) {
@@ -83,5 +85,11 @@ function getTimeByTimeZone(offset) {
   // 返回格式化的字符串
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
+
+/* RFC1123时间 */
+rt.get("/rfctime", cors(), (req, res) => {
+  res.json({err: "0", time: new Date().toUTCString()})
+})
+  
 
 module.exports = rt
