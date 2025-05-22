@@ -2,13 +2,14 @@ const express = require('express')
 const rt = express.Router()
 const Weather = require('../db/model/Weather')
 const https = require("https")
-const adcodeMap = require("./adcodeMap")
+const {adcodeMap, permitMapCode} = require("./adcodeMap")
 const cors = require("cors")
+const zlib = require('zlib');
 
 /* --- 天气 --- */
 // 处理客户端天气请求
 rt.get('/weather', cors(), (req, res) => {
-  console.log(`${new Date()}: \n${JSON.stringify(req.headers)} \n${JSON.stringify(req.baseUrl)}`)
+  // console.log(`${new Date()}: \n${JSON.stringify(req.headers)} \n${JSON.stringify(req.baseUrl)}`)
   let { adcode } = req.query
   Weather.findOne({adcode}, (err, doc) => {
     if (!err) {
@@ -20,15 +21,18 @@ rt.get('/weather', cors(), (req, res) => {
   })  
 })
 
-// 高德天气轮询, 每小时
+/* 高德天气 */
+
+// 轮询每3小时，每日30万次（已调整） -> 每月5000次
 setInterval(() => {
   getAmapWea()
-}, 1000*3600)
+}, 1000*3600*3)
 
 function getAmapWea () {
-  const WEAKEY = "efe6b93d1cba049b9dc582fb9f37e255" //每日30万次
+  const WEAKEY = "efe6b93d1cba049b9dc582fb9f37e255"
   let cityCount = 0
   for (let v of adcodeMap) {
+    if (Object.keys(permitMapCode).indexOf(v)<0) continue // 只更新许可的城市
     cityCount += 1
     https.get(`https://restapi.amap.com/v3/weather/weatherInfo?city=${v}&key=${WEAKEY}`, res => {
       let info = ""
@@ -42,6 +46,8 @@ function getAmapWea () {
           const data = JSON.parse(info)
           // console.log(data)
           let {province, city, adcode, weather, temperature, humidity, windpower, winddirection, reporttime} = data.lives[0]
+          // 去除windpower中的"≤"和"≥"
+          windpower = windpower.replace(/≤/g, "").replace(/≥/g, "")
           await Weather.findOneAndUpdate(
             {adcode: v}, 
             {prov: province, city, adcode, wea: weather, temp: temperature, hum: humidity, windpower, winddir: winddirection, reporttime},
@@ -51,7 +57,85 @@ function getAmapWea () {
       })
     }).on("error", err => console.log(err))
   }
-  console.log(`total ${cityCount} cities update`)
+  console.log(`AmapWea total ${cityCount} cities update`)
+}
+
+/* 和风天气 */
+const YourPrivateKey = ``
+const HostApi = "https://nh6apvw8ee.re.qweatherapi.com"
+
+// 和风天气轮询, 每小时，每月30000次
+setInterval(() => { 
+  getHfWea()
+}, 1000*3600)
+
+async function getHfWea () {
+  try {
+    let token = await genHfWeaToken()
+    const options = {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+    // console.log('Generated token:', token)
+    // 遍历对象permitMapCode
+    let cityCount = 0
+    for (let adcode of Object.keys(permitMapCode)) {
+      const url = `${HostApi}/v7/weather/now?location=${permitMapCode[adcode][0]}`
+      getHfWeaOnce(adcode, url, options)
+      cityCount += 1 
+    }
+    console.log(`HfWea total ${cityCount} cities update`)
+  } catch (e) { console.error('Error generating token:', e) }
+}
+// 和风天气单次查询+数据库更新
+function getHfWeaOnce (adcode, url, options) {
+  https.get(url, options, (res) => {
+    let data = [];
+    res.on('data', chunk => data.push(chunk));
+    res.on('end', () => {
+      try {
+        const buffer = Buffer.concat(data);
+        const encoding = res.headers['content-encoding'];
+        // 和风返回是gzip压缩的
+        if (encoding === 'gzip') {
+          zlib.gunzip(buffer, async (err, decoded) => {
+            if (err) {
+              console.error('Decompression error:', err);
+            } else {
+              try {
+                const result = JSON.parse(decoded.toString());
+                let {text, temp, humidity, windScale, windDir, obsTime} = result.now
+                // 去除windDir中的"风"字
+                windDir = windDir.replace(/风/g, "")
+                await Weather.findOneAndUpdate( 
+                  {adcode}, 
+                  {adcode, wea: text, temp, hum: humidity, windpower: windScale, winddir: windDir, reporttime: obsTime},
+                  {new: true, upsert: true}
+                )  
+                // console.log(`HfWea ${adcode} update success:`, result)               
+              } catch (e) { console.error('hf update db error:', e); }
+            }
+          });
+        }
+      } catch (e) { console.error('JSON parse error:', e) }
+    });
+  }).on('error', err => { console.error('Request error:', err) });
+}
+
+// 生成和风天气的 JWT token
+async function genHfWeaToken () {
+  // 动态导入 jose
+  const { SignJWT, importPKCS8 } = await import('jose')
+  const privateKey = await importPKCS8(YourPrivateKey, 'EdDSA')
+  const iat = Math.floor(Date.now() / 1000) - 30
+  const exp = iat + 60 * 5 // 5分钟有效期
+  const token = await new SignJWT({
+    sub: '4MDWN3CX58',
+    iat,
+    exp
+  })
+    .setProtectedHeader({ alg: 'EdDSA', kid: 'CHB3UJ8CWV' })
+    .sign(privateKey)
+  return token
 }
 
 

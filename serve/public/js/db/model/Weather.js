@@ -9,7 +9,7 @@ const weaSchema = new mongoose.Schema({
   hum: String,
   windpower: String,
   winddir: String,
-  reporttime: String
+  reporttime: String,
 })
 
 const Weather = mongoose.model('weathers', weaSchema)
