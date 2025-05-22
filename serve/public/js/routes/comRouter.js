@@ -61,7 +61,7 @@ function getAmapWea () {
 }
 
 /* 和风天气 */
-const YourPrivateKey = ``
+const YourPrivateKey = `` // privateInfo.md
 const HostApi = "https://nh6apvw8ee.re.qweatherapi.com"
 
 // 和风天气轮询, 每小时，每月30000次
