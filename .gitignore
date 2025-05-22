@@ -2,3 +2,5 @@
 **/dist
 dist.zip
 dist.7z
+test.js
+/privateInfo.md
