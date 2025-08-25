@@ -149,7 +149,7 @@ rt.get("/time", cors(), (req, res) => {
   } else res.json({err: "2", msg: "offset err"})
 })
 
-function getTimeByTimeZone(offset) {
+function getTimeByTimeZone(offset, isWeekday=false) {
   // 获取当前时间
   const currentDate = new Date();
 
@@ -165,10 +165,18 @@ function getTimeByTimeZone(offset) {
   const day = String(targetDate.getDate()).padStart(2, '0');
   const hours = String(targetDate.getHours()).padStart(2, '0');
   const minutes = String(targetDate.getMinutes()).padStart(2, '0');
-
+  const weekday = targetDate.getDay(); // 0（周日）到 6（周六）
   // 返回格式化的字符串
+  if (isWeekday) return weekday;
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
+
+rt.get("/time/weekday", cors(), (req, res) => { // 获取周几
+  let timezone = parseInt(req.query.timezone)
+  if (timezone >= -12 && timezone <= 12) {
+    res.json({err: "0", weekday: getTimeByTimeZone(timezone, true)})
+  } else res.json({err: "2", msg: "offset err"})
+})
 
 /* RFC1123时间 */
 rt.get("/rfctime", cors(), (req, res) => {
