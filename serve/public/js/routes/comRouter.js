@@ -149,6 +149,8 @@ rt.get("/time", cors(), (req, res) => {
   } else res.json({err: "2", msg: "offset err"})
 })
 
+const weekdayCH = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
 function getTimeByTimeZone(offset, isWeekday=false) {
   // 获取当前时间
   const currentDate = new Date();
@@ -167,7 +169,7 @@ function getTimeByTimeZone(offset, isWeekday=false) {
   const minutes = String(targetDate.getMinutes()).padStart(2, '0');
   const weekday = targetDate.getDay(); // 0（周日）到 6（周六）
   // 返回格式化的字符串
-  if (isWeekday) return weekday;
+  if (isWeekday) return weekdayCH[weekday];
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
