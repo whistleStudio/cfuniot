@@ -10,16 +10,43 @@
     </div> 
     
     <div style="margin-left: 80px;"  v-if="$store.state.dataResetOk" key="data">
+            <!-- 记录日志下载 -->
+      <div style="margin-top:10px;margin-bottom:10px;">
+        <button @click="downloadLogAll" class="btn btn-sm btn-outline-secondary">记录日志下载</button>
+      </div>
+
+      <!-- 新增：订阅主题管理（按设备） -->
+      <div id="subTopicBox" style="margin-bottom: 50px;">
+        <div v-for="(t, idx) in subTopics" :key="idx" style="display:flex; align-items:center; margin-bottom:8px;">
+          <div class="form-check form-switch" style="margin-right:10px;">
+            <label class="form-check-label">会话监听</label>
+            <input @click="toggleSubBtn(idx)" :checked="subState[idx]" class="form-check-input" type="checkbox">
+          </div>
+          <label style="margin-right:6px;">主题：</label>
+          <input v-model="subTopics[idx]" style="width:180px;margin-right:10px;" class="form-control" placeholder="主题名">
+          <div style="width:520px; margin-left:6px;">
+            <input readonly class="form-control" :value="subLatest[idx] ? `${subLatest[idx].val}` : ''" placeholder="尚无消息">
+          </div>
+          <button v-if="subTopics.length>1" @click="removeSubTopic(idx)" class="btn btn-sm btn-danger" style="margin-left:8px;">删除</button>
+        </div>
+        <div>
+          <button @click="addSubTopic" class="btn btn-sm btn-primary" :disabled="subTopics.length>=5">+</button>
+          <button @click="saveSubTopics" class="btn btn-sm btn-outline-success" style="margin-left:8px;">保存主题</button>
+          <small style="margin-left:12px;color:#777;">最少1项，最多5项。保存后下次登录恢复。</small>
+        </div>
+      </div>
+
       <!-- 会话监听 -->
-      <div id="getMsg" style="margin-top:50px; display: flex; align-items: center">
+      <!-- <div id="getMsg" style="margin:50px 0; display: flex; align-items: center">
         <div class="form-check form-switch">
           <label class="form-check-label" for="flexSwitchCheckDefault4">会话监听</label>
           <input @click="toggleMsgBtn()" :checked="dataState[actDataIdx][8]" :disabled="!haveDev"
           class="form-check-input" type="checkbox" id="flexSwitchCheckDefault4">
         </div>
         <div><span v-show="dataState[actDataIdx][8]">{{pageData[actDataIdx][8]}}</span></div>
-      </div>
+      </div> -->
       <!-- 数据框监听 -->
+      <div class="topic-hint-text">数据A-D（主题: Cnum1）、数据E-H（主题: Cnum2）</div>
       <div id="getData">
         <div id='Cnum1'>
           <div v-for="(v, i) in Array(4)" :key="i" class="infoData">
@@ -129,7 +156,7 @@
 
 <script>
 const PComment = res => require(["components/private/PComment"], res)
-import {genWorkbook, parseWorkbook} from "utils/solveWorkbook"
+import {genWorkbook, parseWorkbook, genWorkbookMultiple} from "utils/solveWorkbook"
 import {mapState} from "vuex"
 
 export default {
@@ -150,6 +177,12 @@ export default {
         link: ""
       },
       uploadVal: null,
+
+            // 新增订阅相关
+      subTopics: [],      // 设备级订阅主题列表
+      subState: [],       // 开启/关闭监听状态
+      subLatest: [],      // 最新消息显示 {val, time}
+      subTimers: []       // 存放每个行的定时器 id
     }
   },
   computed: {
@@ -197,8 +230,170 @@ export default {
           }
         }        
       },100)
+      if (typeof this.loadSubTopics === 'function') this.loadSubTopics() // 加载自定义订阅主题
+    },
+
+    /* ==========新增 订阅相关 ========== */
+    loadSubTopics() {
+      if (!this.haveDev) {
+        this.subTopics = ['Cmsg']; this.subState = [false]; this.subLatest = [null]; return
+      }
+      const did = this.actDid
+      fetch(`/api/dev/getSubTopics?did=${did}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.err === 0 && Array.isArray(data.subTopics)) {
+            let pts = data.subTopics.slice(0,5)
+            if (pts.length < 1) pts = ['Cmsg']
+            this.subTopics = pts.map(s => s || '')
+            this.subState = this.subTopics.map(_ => false)
+            this.subLatest = this.subTopics.map(_ => null)
+            this.subTimers = []
+          } else {
+            this.subTopics = ['Cmsg']; this.subState = [false]; this.subLatest = [null]
+          }
+        }).catch(e => {
+          console.log('loadSubTopics fail', e)
+          this.subTopics = ['Cmsg']; this.subState = [false]; this.subLatest = [null]
+        })
+    },
+    addSubTopic() {
+      if (this.subTopics.length >= 5) return
+      this.subTopics.push(''); this.subState.push(false); this.subLatest.push(null)
+    },
+    removeSubTopic(idx) {
+      if (this.subTopics.length <= 1) return
+      // 关闭对应定时器
+      if (this.subTimers[idx]) { clearInterval(this.subTimers[idx]); this.subTimers[idx]=null }
+      this.subTopics.splice(idx, 1)
+      this.subState.splice(idx, 1)
+      this.subLatest.splice(idx, 1)
+      this.subTimers.splice(idx, 1)
+    },
+    saveSubTopics() {
+      if (!this.haveDev) { alert('无设备'); return }
+      let pts = this.subTopics.map(s => (s||'').toString().trim()).filter(s => s !== '')
+      if (pts.length < 1) { alert('至少保留一项主题'); return }
+      if (pts.length > 5) pts = pts.slice(0,5)
+      fetch('/api/dev/updateSubTopics', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json;charset=utf-8'},
+        body: JSON.stringify({ did: this.actDid, subTopics: pts })
+      }).then(res => res.json())
+      .then(data => {
+        if (data && data.err === 0) {
+          this.subTopics = pts
+          this.subState = this.subTopics.map(_ => false)
+          this.subLatest = this.subTopics.map(_ => null)
+          alert('主题保存成功')
+        } else {
+          alert('保存失败：' + (data.msg || '未知错误'))
+        }
+      }).catch(e => {
+        console.log(e); alert('保存失败')
+      })
+    },
+    toggleSubBtn(idx, inv=2000) {
+      console.log('toggleSubBtn', idx)
+      // 切换本地监听状态；若开启设定定时器轮询 /api/data/reqSubMsg 获取最新消息
+      this.$set(this.subState, idx, !this.subState[idx])
+      if (this.subState[idx]) {
+        // start polling
+        const topic = this.subTopics[idx]
+        const id = setInterval(()=> {
+          this.rReqSubMsg(topic, idx)
+        }, inv)
+        this.$set(this.subTimers, idx, id)
+        // 立即拉一次
+        this.rReqSubMsg(this.subTopics[idx], idx)
+      } else {
+        // stop polling
+        if (this.subTimers[idx]) {
+          clearInterval(this.subTimers[idx])
+          this.$set(this.subTimers, idx, null)
+        }
+      }
+    },
+    rReqSubMsg(topic, idx) {
+      console.log('rReqSubMsg', topic, idx)
+      if (!this.haveDev) return
+      fetch('/api/data/reqSubMsg', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json;charset=utf-8'},
+        body: JSON.stringify({_id: this.act_id, topic})
+      }).then(res => res.json())
+      .then(data => {
+        console.log('rReqSubMsg data:', data)
+        if (data && data.err === 0) {
+          if (data.val !== null && data.val !== undefined) {
+            this.$set(this.subLatest, idx, {val: data.val, time: data.time || new Date().toLocaleString()})
+          } else {
+            // no message yet
+          }
+        }
+      }).catch(e => console.log('rReqSubMsg fail', e))
+    },
+    clearAllSubTimers() {
+      if (this.subTimers && this.subTimers.length) {
+        this.subTimers.forEach(t => { if (t) clearInterval(t) })
+        this.subTimers = []
+      }
+    },
+    downloadLogAll() {
+      // 简单实现：打开新窗口并调用后端 downloadLog（前端可在收到 logs 后生成文件）
+      if (!this.haveDev) { alert('无设备'); return }
+      console.log("subTopics: ", this.subTopics)
+      // 这里弹出一个简单选择：按第一个 topic 下载；你可以扩展为选择器
+      // const topic = this.subTopics[0] || 'Cmsg'
+      // 默认最近24小时
+      // window.open(`/api/data/downloadLog?did=${this.actDid}&topic=${encodeURIComponent(topic)}`, '_blank')
+      // fetch(`/api/data/downloadLog?did=${this.actDid}`)
+      // .then(res => res.json())
+      // .then(data => {
+      //   console.log('downloadLogAll data:', data)
+      // }).catch(e => console.log('downloadLogAll fail', e))
+      fetch(`/api/data/downloadLog`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json;charset=utf-8'},
+        body: JSON.stringify({ did: this.actDid, subTopics: this.subTopics }) // 传递页面内所有自定义主题，忽略是否保存
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log('downloadLogAll data:', data)
+        if (data?.err > 0 ) {alert(data.msg || '未知错误'); return;}
+        const sheetsData = []
+        for (let log of data.logArr) {
+          const {topic, msgs} = log
+          sheetsData.push({ sheetName: `${this.actName}-${topic}`, messages: msgs })
+        }
+        ;(async () => {
+          try {
+            // 生成 workbook
+            const workbook = genWorkbookMultiple(sheetsData, `${this.actName}_订阅日志`)
+            const buf = await workbook.xlsx.writeBuffer()
+            const blob = new Blob([buf], { type: 'application/octet-stream' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            const ts = new Date().getTime()
+            const fname = `${this.actName}_subtopics_${ts}.xlsx`
+            a.href = url
+            a.download = fname
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            URL.revokeObjectURL(url)
+          } catch(e) {        
+            console.error('exportSubtopicsExcel error', e)
+            alert('导出失败，请查看控制台错误')
+          }
+        })()
+      })
 
     },
+    /* -----------新增结束------------- */
+
+
+
     toggleDataBtn (i, inv=2000) {
       this.$store.commit("changeBtnVal", {k: "dataState", i: this.actDataIdx, j: i})
       console.log('---',this.actDataIdx)
@@ -494,6 +689,8 @@ export default {
   },
   created () {
     console.log("u2 created")
+    // 新增：初始若已有设备，加载当前设备 subscribe topics
+    if (this.haveDev) this.loadSubTopics()
   },
   mounted () {
     this.myGraph = this.$echarts.init(this.$refs.gra)

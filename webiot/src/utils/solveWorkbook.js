@@ -69,4 +69,54 @@ function parseWorkbook (rawFile) {
 }
 
 
-export { genWorkbook, parseWorkbook }
+/* ========== 新增：生成多 sheet 的 workbook ==========
+   sheetsData: [
+     { sheetName: 'device-topic1', messages: [[timeStr, payload], ...] },
+     { sheetName: 'device-topic2', messages: [[timeStr, payload], ...] },
+     ...
+   ]
+   返回 workbook 实例（调用者可使用 workbook.xlsx.writeBuffer() 导出）
+*/
+function genWorkbookMultiple (sheetsData, bookTitle) {
+  let workbook = new ExcelJS.Workbook()
+  // 可设置元数据
+  if (bookTitle) workbook.creator = bookTitle
+  sheetsData.forEach(sd => {
+    const name = sd.sheetName ? sd.sheetName.toString().substr(0, 31) : 'sheet' // excel sheet 名称最多 31 字符
+    const ws = workbook.addWorksheet(name)
+    // 标题行
+    ws.mergeCells('A1:B1')
+    const titleRow = ws.getRow(1)
+    titleRow.values = [sd.sheetName || '']
+    titleRow.font = {size: 14, bold: true}
+    titleRow.alignment = { horizontal: 'center', vertical: 'middle' }
+    titleRow.commit()
+    // 表头
+    ws.columns = [
+      { header: '时间', key: 'time', width: 30 },
+      { header: '数据', key: 'value', width: 60 }
+    ]
+    const headerRow = ws.getRow(2)
+    headerRow.font = { bold: true }
+    headerRow.alignment = { horizontal: 'center' }
+    headerRow.eachCell(cell => {
+      cell.fill = { type: 'pattern', pattern:'solid', fgColor: { argb:'FF538DD5' } }
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }
+    })
+    headerRow.commit()
+    // 数据写入：从第3行开始
+    const msgs = Array.isArray(sd.messages) ? sd.messages : []
+    let rIdx = 3
+    for (let i = 0; i < msgs.length; i++) {
+      const row = ws.getRow(rIdx++)
+      row.values = [ msgs[i][0], msgs[i][1] ]
+      row.eachCell(cell => { cell.alignment = { horizontal: 'left' } })
+      row.commit()
+    }
+    // 美化
+    ws.views = [{state: 'frozen', ySplit: 2}]
+  })
+  return workbook
+}
+
+export { genWorkbook, parseWorkbook, genWorkbookMultiple }

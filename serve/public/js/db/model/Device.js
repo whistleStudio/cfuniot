@@ -10,7 +10,9 @@ const deviceSchema = new mongoose.Schema({
   regDate: {type: Date, default: new Date()},
   logDate: Date,
   state: {type:Number, default:0} ,
-  comment: {type:String, default:'add comment ...(markdown supported)'}
+  comment: {type:String, default:'add comment ...(markdown supported)'},
+  pubTopics: { type: [String], default: ['CmsgW'] }, // 发布主题列表
+  subTopics: { type: [String], default: ['Cmsg'] } // 订阅主题列表
 })
 deviceSchema.set('versionKey', false)
 

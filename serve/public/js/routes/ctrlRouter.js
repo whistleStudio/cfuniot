@@ -38,12 +38,25 @@ rt.post('/rangeVal', (req, res) => {
 })
 
 /* 处理发送会话请求 */
+// rt.post('/pubMsgW', (req, res) => {
+//   let {did, msgW, user} = req.body
+//   res.json({err:0})
+//   try {
+//     console.log(user, '-msgW: ', msgW)
+//     client.publish(`${user}/${did}/CmsgW`, msgW, {retain:false})
+//   }catch(e){console.log(new Date(), e)}
+// })
+
+/* 处理发送会话请求
+   现在支持动态主题（由前端传入 topic），若未传则使用原来的 CmsgW */
 rt.post('/pubMsgW', (req, res) => {
-  let {did, msgW, user} = req.body
+  let {did, msgW, user, topic} = req.body
   res.json({err:0})
   try {
-    console.log(user, '-msgW: ', msgW)
-    client.publish(`${user}/${did}/CmsgW`, msgW, {retain:false})
+    console.log(user, '-msgW: ', msgW, ' topic:', topic)
+    // 若前端没有传 topic，则使用原来的默认主题
+    const pubTopic = topic && topic.toString().trim() ? topic.toString().trim() : 'CmsgW'
+    client.publish(`${user}/${did}/${pubTopic}`, msgW, {retain:false})
   }catch(e){console.log(new Date(), e)}
 })
 

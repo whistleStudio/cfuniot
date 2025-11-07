@@ -19,7 +19,7 @@ var verToken = require('./public/js/validate/tokenVerify');
 const cookieParser = require('cookie-parser')
 
 app.use(cookieParser())
-/* --- prod: /api/user ... --- */
+/* --- prod: /api/user ... ---  */
 // 解析token获取用户信息
 app.use(['/user','/dev','/ctrl','/data'], function(req, res, next) {
 	var token = req.cookies.token || req.headers['authorization']

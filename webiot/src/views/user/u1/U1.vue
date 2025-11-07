@@ -8,18 +8,38 @@
       </ul>
     </div>
     <div id='controller' >
-      <div></div>
-      <div class="input-group mb-3" id='sendMsgW'>
+      <div class="topic-hint-text">自定义发布主题</div>
+      <!-- 新增：发布多主题行（设备级pubTopics，可编辑、最多5，最少1） -->
+      <div id="multiPub" style="margin-bottom:20px;">
+        <div v-for="(topic, idx) in pubTopics" :key="idx" style="display:flex;align-items:center;margin-bottom:8px;">
+          <button :disabled="!haveDev" @click="sendPub(idx)" class="btn btn-outline-primary" type="button" style="margin-right:8px;">发送</button>
+          <label style="margin-right:6px;">主题：</label>
+          <input v-model="pubTopics[idx]" type="text" class="form-control" style="width:180px;margin-right:10px;" placeholder="主题名">
+          <label style="margin-right:6px;">内容：</label>
+          <input v-model="pubMsgs[idx]" type="text" class="form-control" style="flex:1;margin-right:10px;" placeholder="输入内容小于20字节">
+          <button v-if="pubTopics.length>1" @click="removePubTopic(idx)" class="btn btn-sm btn-danger" type="button">删除</button>
+        </div>
+        <div style="margin-top:6px;">
+          <button @click="addPubTopic" class="btn btn-sm btn-primary" :disabled="pubTopics.length>=5">+</button>
+          <button @click="savePubTopics" class="btn btn-sm btn-outline-success" style="margin-left:8px;">保存主题</button>
+          <small style="margin-left:12px;color:#777;">最少1项，最多5项。保存后在下次登录恢复。</small>
+        </div>
+      </div>
+
+      <!-- <div class="input-group mb-3" id='sendMsgW' style="display:none;">
         <button :disabled="!haveDev" @click="sendMsg" class="btn btn-outline-primary" type="button" id="button-addon1">发送会话</button>
         <input :disabled="!haveDev" v-model="msg" 
         type="text" class="form-control" placeholder="输入应内容小于20字节" aria-label="Example text with button addon" aria-describedby="button-addon1">
-      </div>
+      </div> -->
       <div id="controlNum">
+        <div class="topic-hint-text">按钮（主题：Cbtn）</div>
         <div v-for="(v,i) in btns" :key="i" class="controller-btn">
           <button @click="btnClick(i)" @mousedown="btnDown(i)" @mouseup="btnUp(i)"
           :disabled="!haveDev" :class="{active: curBtns[actCtrlIdx][i]}" type="button" class="btn btn-outline-primary">{{v}}</button>
           <div class="pin" @click="pinClick(i)" :style="{backgroundImage: `url(${require('img/u1/pin'+curBtnMode[actCtrlIdx][i]+'.png')})`}"></div>
         </div>
+
+        <div class="topic-hint-text">滑杆（主题：Cran）</div>
         <div v-for="(v,i) in Array(4)" :key="i+10" class="controller-range">
           <label :for="`customRange${i+1}`" class="form-label">滑杆{{String.fromCharCode(65+i)}}&nbsp;&nbsp;&nbsp;<span>[ {{curRans[actCtrlIdx][i]}} ]</span></label>
           <input :disabled="!haveDev" :id="`customRange${i+1}`" 
@@ -42,6 +62,9 @@ export default {
       btns: ["按钮A", "按钮B", "按钮C", "按钮D"],
       msg: "",
       actCtrlIdx: 0,
+      // 新增：可发布主题数组（按设备加载），以及每行的输入内容数组
+      pubTopics: [], 
+      pubMsgs: []
     }
   },
   computed : {
@@ -60,6 +83,8 @@ export default {
     /* 切换设备标签页 */
     changeTag (i) {
       this.actCtrlIdx = i
+      // 切换设备时加载对应设备的 pubTopics
+      this.loadPubTopics()
     },
     /* 点击按钮 */
     btnClick: throttle(function (i){
@@ -116,7 +141,7 @@ export default {
       .then(res => res.json()
       .then(data => {}))      
     },
-    /* 发送会话 */
+    /* 发送会话（保留） */
     sendMsg: throttle(function () {
       if (getTextLen(this.msg) <= 20) {
         fetch('/api/ctrl/pubMsgW', {
@@ -138,9 +163,91 @@ export default {
       // 每次点击图钉都会置0
       this.$store.commit("changeArrVal", {k: "curBtns", v: 0, idx: [this.actCtrlIdx, i]})
       this.rBtnVal (this.actDid, this.curName)
-    }
-  },
+    },
 
+    /* ========== 新增：发布多主题相关（按设备） ========== */
+    // 加载当前设备的发布主题（调用时会检查是否有设备）
+    loadPubTopics() {
+      if (!this.haveDev) {
+        this.pubTopics = ['CmsgW']
+        this.pubMsgs = ['']
+        return
+      }
+      const did = this.actDid
+      fetch(`/api/dev/getPubTopics?did=${did}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.err === 0 && Array.isArray(data.pubTopics)) {
+            let pts = data.pubTopics.slice(0,5)
+            if (pts.length < 1) pts = ['CmsgW']
+            this.pubTopics = pts.map(s => s || '')
+            this.pubMsgs = this.pubTopics.map(() => '')
+          } else {
+            this.pubTopics = ['CmsgW']; this.pubMsgs = ['']
+          }
+        }).catch(e => {
+          console.log('loadPubTopics fail', e)
+          this.pubTopics = ['CmsgW']; this.pubMsgs = ['']
+        })
+    },
+    addPubTopic() {
+      if (this.pubTopics.length >= 5) return
+      this.pubTopics.push('')
+      this.pubMsgs.push('')
+    },
+    removePubTopic(idx) {
+      if (this.pubTopics.length <= 1) return
+      this.pubTopics.splice(idx, 1)
+      this.pubMsgs.splice(idx, 1)
+    },
+    savePubTopics() {
+      if (!this.haveDev) { alert('无设备'); return }
+      let pts = this.pubTopics.map(s => (s||'').toString().trim()).filter(s => s !== '')
+      if (pts.length < 1) { alert('至少保留一项主题'); return }
+      if (pts.length > 5) pts = pts.slice(0,5)
+      fetch('/api/dev/updatePubTopics', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json;charset=utf-8'},
+        body: JSON.stringify({ did: this.actDid, pubTopics: pts })
+      }).then(res => res.json())
+      .then(data => {
+        if (data && data.err === 0) {
+          this.pubTopics = pts
+          this.pubMsgs = this.pubTopics.map((_) => '')
+          alert('主题保存成功')
+        } else {
+          alert('保存失败：' + (data.msg || '未知错误'))
+        }
+      }).catch(e => {
+        console.log(e); alert('保存失败')
+      })
+    },
+    sendPub(idx) {
+      if (!this.haveDev) { alert('无设备'); return }
+      const topic = (this.pubTopics[idx] || '').toString().trim()
+      const msg = (this.pubMsgs[idx] || '').toString()
+      if (!topic) { alert('主题不能为空'); return }
+      if (getTextLen(msg) > 20) { alert('消息不得超过20字节'); return }
+      fetch('/api/ctrl/pubMsgW', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json;charset=utf-8'},
+        body: JSON.stringify({ did: this.actDid, msgW: msg, user: this.curName, topic })
+      }).then(res => res.json())
+      .then(data => {
+        // 可加成功提示或清空输入
+        console.log('sendPub resp', data)
+      }).catch(e => console.log(e))
+    }
+    /* ========== /新增结束 ========== */
+  },
+  created() {
+    // 初始加载当前设备的 pubTopics（如果 curDevs 尚未准备好，可在切换设备时加载）
+    // 若页面创建时已有设备则立即加载
+    if (this.haveDev) this.loadPubTopics()
+  },
+  mounted() {
+    // 保持原行为
+  }
 }
 </script>
 

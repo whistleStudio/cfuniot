@@ -33,6 +33,7 @@
   width: 140px;
   height: 50px;
   margin-right: 100px;
+  margin-bottom: 50px;
 }
 .controller-btn>button {
   width: 100px;
@@ -49,8 +50,14 @@
   cursor: pointer;
 }
 .controller-range {
-  margin-top: 50px;
+  margin-top:10px;
 }
 .controller-range span {
   color: rgb(61, 141, 233);
+}
+.topic-hint-text {
+  color: #878787;
+  font-size: 19px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
