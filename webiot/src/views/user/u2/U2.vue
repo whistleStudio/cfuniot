@@ -212,6 +212,7 @@ export default {
   methods: {
     /* 切换设备标签页 */
     changeTag (i) {
+      this.stopPrevSubscriptions() // 停止先前设备的所有订阅（若有）
       this.actDataIdx = i
       this.graShowFlag = 0
       clearInterval(this.timGra)
@@ -231,6 +232,28 @@ export default {
         }        
       },100)
       if (typeof this.loadSubTopics === 'function') this.loadSubTopics() // 加载自定义订阅主题
+    },
+
+    /* 统一停止并关闭此前设备的订阅：
+       - 清除所有 subTimers
+       - 将 subState 全部置为 false（更新 UI）
+       - 清空 subTimers 引用数组
+    */
+    stopPrevSubscriptions() {
+      try {
+        if (this.subTimers && this.subTimers.length) {
+          this.subTimers.forEach(tid => { if (tid) try { clearInterval(tid) } catch(e){} })
+        }
+        // 将开关全部关闭，清空定时器数组（下一设备加载时会重建）
+        if (this.subState && this.subState.length) {
+          this.subState = this.subState.map(() => false)
+        } else {
+          this.subState = []
+        }
+        this.subTimers = []
+      } catch (e) {
+        console.error('stopPrevSubscriptions error', e)
+      }
     },
 
     /* ==========新增 订阅相关 ========== */
@@ -690,7 +713,9 @@ export default {
   created () {
     console.log("u2 created")
     // 新增：初始若已有设备，加载当前设备 subscribe topics
-    if (this.haveDev) this.loadSubTopics()
+    setTimeout(() => {
+      if (this.haveDev) this.loadSubTopics()
+    }, 100)
   },
   mounted () {
     this.myGraph = this.$echarts.init(this.$refs.gra)
@@ -698,6 +723,8 @@ export default {
   beforeDestroy () {
     clearInterval(this.timGra)
     this.graShowFlag = 0
+    // 清理订阅轮询
+    this.stopPrevSubscriptions()
   },
 }
 </script>

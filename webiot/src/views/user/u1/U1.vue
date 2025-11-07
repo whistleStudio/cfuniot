@@ -177,6 +177,7 @@ export default {
       fetch(`/api/dev/getPubTopics?did=${did}`)
         .then(res => res.json())
         .then(data => {
+          console.log("data loadPubTopics:", data)
           if (data && data.err === 0 && Array.isArray(data.pubTopics)) {
             let pts = data.pubTopics.slice(0,5)
             if (pts.length < 1) pts = ['CmsgW']
@@ -243,10 +244,13 @@ export default {
   created() {
     // 初始加载当前设备的 pubTopics（如果 curDevs 尚未准备好，可在切换设备时加载）
     // 若页面创建时已有设备则立即加载
-    if (this.haveDev) this.loadPubTopics()
+    setTimeout(() => {
+      if (this.haveDev) this.loadPubTopics()
+    }, 100)
   },
   mounted() {
     // 保持原行为
+    
   }
 }
 </script>

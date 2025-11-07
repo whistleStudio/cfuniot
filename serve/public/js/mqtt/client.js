@@ -81,6 +81,9 @@ function scheduleDailyClear() {
 }
 
 client.on("connect", function () {
+  // 在连接后启动每日清理计划
+  scheduleDailyClear();
+
   console.log("aedes connect");
   // username/did/Cnum
   client.subscribe("+/+/Cnum1", (err, message) => {
@@ -192,7 +195,7 @@ client.on("message", function (topic, message) {
           updatedAt: now,
         });
       } else {
-        // 已存在：比较最后一条消息的日期（YYYY-MM-DD）
+        // 已存在
         const msgs = Array.isArray(doc.messages) ? doc.messages.slice() : [];
         msgs.push([timeStr, payload]);
         if (msgs.length > MAX_LEN) msgs.splice(0, msgs.length - MAX_LEN);
