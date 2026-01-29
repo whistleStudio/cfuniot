@@ -2,124 +2,217 @@ const express = require('express')
 const rt = express.Router()
 const Weather = require('../db/model/Weather')
 const https = require("https")
-const {adcodeMap, permitMapCode} = require("./adcodeMap")
+const {permitMapCode} = require("./adcodeMap")
 const cors = require("cors")
 const zlib = require('zlib');
 
-/* --- 天气 --- */
-// 处理客户端天气请求
-rt.get('/weather', cors(), (req, res) => {
-  // console.log(`${new Date()}: \n${JSON.stringify(req.headers)} \n${JSON.stringify(req.baseUrl)}`)
-  let { adcode } = req.query
-  Weather.findOne({adcode}, (err, doc) => {
-    if (!err) {
-      if (doc) {
-        let {city, wea, temp, hum, windpower, winddir} = doc
-        res.json({err: "0", city, wea, temp, hum, winddir, windpower})
-      } else res.json({err: "1", msg: "city info err"})
-    } else res.json({err: "5", msg: "database err"})
-  })  
-})
+console.log(permitMapCode["320100"])
+/*
+策略说明（实现要点）：
+- 小时窗口按“整点到下一个整点”对齐（例如 14:00:00 到 15:00:00）。
+- 每次 /weather?adcode=XXX 请求时：
+  1) 检查数据库中是否存在该 adcode 在当前小时窗口已有的记录（通过 fetchedHour 字段）。
+  2) 若有，则直接返回数据库记录（避免调用第三方）。
+  3) 若没有，则对该 adcode 发起一次外部天气请求（支持先和风、失败再高德回退），将结果存入数据库并返回。
+- 为防止短时间内对同一 adcode 发起重复的并行请求，使用内存中的 pendingFetches 去重并发请求。
+- 若外部请求失败且数据库已有历史记录（即使不是当前小时），会返回该历史记录作为降级；若都没有则返回错误。
+*/
 
-/* 高德天气 */
+// 配置与全局状态
+const WEAKEY = "efe6b93d1cba049b9dc582fb9f37e255" // 高德（回退用）
+const YourPrivateKey = `` // 和风私钥（若使用和风，需要在 privateInfo.md 或环境变量里填充）
+const HostApi = "https://nh6apvw8ee.re.qweatherapi.com" // 和风 API 主机（可替换）
 
-// 轮询每3小时，每日30万次（已调整） -> 每月5000次
-setInterval(() => {
-  getAmapWea()
-}, 1000*3600*3)
 
-function getAmapWea () {
-  const WEAKEY = "efe6b93d1cba049b9dc582fb9f37e255"
-  let cityCount = 0
-  for (let v of adcodeMap) {
-    if (Object.keys(permitMapCode).indexOf(v)<0) continue // 只更新许可的城市
-    cityCount += 1
-    https.get(`https://restapi.amap.com/v3/weather/weatherInfo?city=${v}&key=${WEAKEY}`, res => {
-      let info = ""
-      // 开始
-      res.on('data', (chunk) => {
-        info += chunk;
-      }); 
-      // 结束
-      res.on("end", async () => {
-        try {
-          const data = JSON.parse(info)
-          // console.log(data)
-          let {province, city, adcode, weather, temperature, humidity, windpower, winddirection, reporttime} = data.lives[0]
-          // 去除windpower中的"≤"和"≥"
-          windpower = windpower.replace(/≤/g, "").replace(/≥/g, "")
-          await Weather.findOneAndUpdate(
-            {adcode: v}, 
-            {prov: province, city, adcode, wea: weather, temp: temperature, hum: humidity, windpower, winddir: winddirection, reporttime},
-            {new: true, upsert: true}
-          )
-        } catch (e) {console.log(e)}
+// pendingFetches 用于合并并发请求，key = `${adcode}_${hourISO}`
+const pendingFetches = new Map()
+
+function getCurrentHourISO() {
+  const d = new Date()
+  d.setMinutes(0, 0, 0, 0)
+  return d.toISOString()
+}
+
+// promisified https GET that returns Buffer
+function httpsGetBuffer(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, options, (res) => {
+      const chunks = []
+      res.on('data', (c) => chunks.push(c))
+      res.on('end', () => {
+        const buf = Buffer.concat(chunks)
+        resolve({ res, buffer: buf })
       })
-    }).on("error", err => console.log(err))
+    })
+    req.on('error', (e) => reject(e))
+    // in case options.timeout is set
+    if (options.timeout) {
+      req.setTimeout(options.timeout, () => {
+        req.abort()
+        reject(new Error('Request timeout'))
+      })
+    }
+  })
+}
+
+function gunzipAsync(buffer) {
+  return new Promise((resolve, reject) => {
+    zlib.gunzip(buffer, (err, decoded) => {
+      if (err) return reject(err)
+      resolve(decoded)
+    })
+  })
+}
+
+// 将和风的响应解析为统一的对象，如果失败抛错
+async function fetchHfWeather(adcode) {
+  if (!YourPrivateKey) throw new Error('Hf private key not configured')
+  const token = await genHfWeaToken()
+  const options = { headers: { 'Authorization': `Bearer ${token}` } }
+  // permitMapCode maps adcode -> [location, ...], 使用 permitMapCode 中的 location
+  const location = permitMapCode[adcode] && permitMapCode[adcode][0]
+  if (!location) throw new Error(`No location mapping for adcode ${adcode}`)
+  const url = `${HostApi}/v7/weather/now?location=${location}`
+
+  const { res, buffer } = await httpsGetBuffer(url, options)
+  const encoding = res.headers['content-encoding']
+  let bodyBuf = buffer
+  if (encoding === 'gzip') {
+    bodyBuf = await gunzipAsync(buffer)
   }
-  console.log(`AmapWea total ${cityCount} cities update`)
+  const txt = bodyBuf.toString()
+  const result = JSON.parse(txt)
+  console.log("Hf weather response:", result)
+  if (!result || !result.now) throw new Error('Invalid Hf response')
+  const { text, temp, humidity, windScale, windDir, obsTime } = result.now
+  console.log("result.now:", result.now)
+  const windDirClean = (windDir || '').replace(/风/g, "")
+  return {
+    prov: '', // 和风不一定返回省名在 now 段
+    city: permitMapCode[adcode][1] || '', // 使用映射表中的城市名
+    adcode,
+    wea: text,
+    temp,
+    hum: humidity,
+    windpower: windScale,
+    winddir: windDirClean,
+    reporttime: obsTime
+  }
 }
 
-/* 和风天气 */
-const YourPrivateKey = `` // privateInfo.md
-const HostApi = "https://nh6apvw8ee.re.qweatherapi.com"
+// 高德回退请求，解析为统一对象
+async function fetchAmapWeather(adcode) {
+  const url = `https://restapi.amap.com/v3/weather/weatherInfo?city=${adcode}&key=${WEAKEY}`
+  const { res, buffer } = await httpsGetBuffer(url)
+  const txt = buffer.toString()
+  const data = JSON.parse(txt)
+  if (!data || !data.lives || !data.lives[0]) throw new Error('Invalid Amap response')
+  let { province, city, adcode: ac, weather, temperature, humidity, windpower, winddirection, reporttime } = data.lives[0]
+  windpower = (windpower || '').replace(/≤/g, "").replace(/≥/g, "")
+  return {
+    prov: province,
+    city,
+    adcode: ac || adcode,
+    wea: weather,
+    temp: temperature,
+    hum: humidity,
+    windpower,
+    winddir: winddirection,
+    reporttime
+  }
+}
 
-// 和风天气轮询, 每小时，每月30000次
-setInterval(() => { 
-  getHfWea()
-}, 1000*3600)
-
-async function getHfWea () {
+// 对外暴露的按需获取函数：尝试和风 -> 高德回退，成功后写入数据库（包含 fetchedHour 字段）
+async function fetchAndSaveWeatherForAdcode(adcode) {
+  adcode = adcode.trim()
+  // 先尝试和风（若配置），失败再用高德回退
+  let data = null
   try {
-    let token = await genHfWeaToken()
-    const options = {
-      headers: { 'Authorization': `Bearer ${token}` }
+    if (YourPrivateKey) data = await fetchHfWeather(adcode)
+      console.log(data)
+  } catch (e) {
+    console.warn('Hf fetch failed, fallback to Amap:', e)
+    try {
+      data = await fetchAmapWeather(adcode)
+    } catch (e2) {
+      // both failed
+      throw new Error(`All providers failed for ${adcode}: ${e2.message || e2}`)
     }
-    // console.log('Generated token:', token)
-    // 遍历对象permitMapCode
-    let cityCount = 0
-    for (let adcode of Object.keys(permitMapCode)) {
-      const url = `${HostApi}/v7/weather/now?location=${permitMapCode[adcode][0]}`
-      getHfWeaOnce(adcode, url, options)
-      cityCount += 1 
-    }
-    console.log(`HfWea total ${cityCount} cities update`)
-  } catch (e) { console.error('Error generating token:', e) }
+  }
+  
+
+  // 保存到数据库，增添 fetchedHour（按整点对齐）
+  const fetchedHour = getCurrentHourISO()
+  const update = {
+    ...data,
+    fetchedHour
+  }
+  const doc = await Weather.findOneAndUpdate(
+    { adcode },
+    update,
+    { new: true, upsert: true }
+  )
+  return doc
 }
-// 和风天气单次查询+数据库更新
-function getHfWeaOnce (adcode, url, options) {
-  https.get(url, options, (res) => {
-    let data = [];
-    res.on('data', chunk => data.push(chunk));
-    res.on('end', () => {
+
+// Route: 返回天气，按需拉取并缓存（小时对齐）
+rt.get('/weather', cors(), async (req, res) => {
+  try {
+    const { adcode } = req.query
+    if (!adcode) return res.status(400).json({ err: "2", msg: "missing adcode" })
+
+    const currentHour = getCurrentHourISO()
+
+    // 查数据库：优先返回当前小时内已有结果
+    const existing = await Weather.findOne({ adcode })
+    if (existing && existing.fetchedHour === currentHour) {
+      // 已有当前小时数据，直接返回
+      const { city, wea, temp, hum, windpower, winddir } = existing
+      return res.json({ err: "0", city, wea, temp, hum, winddir, windpower })
+    }
+
+    // 若已有并不是当前小时的旧数据，我们仍然尝试去获取新的（以保证数据时效）。
+    // 为避免并发时重复请求，使用 pendingFetches 合并
+    const key = `${adcode}_${currentHour}`
+    if (pendingFetches.has(key)) {
+      // 等待已存在的请求
+      const doc = await pendingFetches.get(key)
+      const { city, wea, temp, hum, windpower, winddir } = doc
+      return res.json({ err: "0", city, wea, temp, hum, winddir, windpower })
+    }
+
+    // 创建一个 fetch Promise 并放入 pendingFetches
+    const fetchPromise = (async () => {
       try {
-        const buffer = Buffer.concat(data);
-        const encoding = res.headers['content-encoding'];
-        // 和风返回是gzip压缩的
-        if (encoding === 'gzip') {
-          zlib.gunzip(buffer, async (err, decoded) => {
-            if (err) {
-              console.error('Decompression error:', err);
-            } else {
-              try {
-                const result = JSON.parse(decoded.toString());
-                let {text, temp, humidity, windScale, windDir, obsTime} = result.now
-                // 去除windDir中的"风"字
-                windDir = windDir.replace(/风/g, "")
-                await Weather.findOneAndUpdate( 
-                  {adcode}, 
-                  {adcode, wea: text, temp, hum: humidity, windpower: windScale, winddir: windDir, reporttime: obsTime},
-                  {new: true, upsert: true}
-                )  
-                // console.log(`HfWea ${adcode} update success:`, result)               
-              } catch (e) { console.error('hf update db error:', e); }
-            }
-          });
-        }
-      } catch (e) { console.error('JSON parse error:', e) }
-    });
-  }).on('error', err => { console.error('Request error:', err) });
-}
+        const doc = await fetchAndSaveWeatherForAdcode(adcode)
+        return doc
+      } catch (e) {
+        // 若获取失败，但数据库有旧数据，降级返回旧数据；否则抛错
+        if (existing) return existing
+        throw e
+      } finally {
+        // 注意：不能在这里删除 map，因为外层 await 需要拿到结果。
+      }
+    })()
+
+    pendingFetches.set(key, fetchPromise)
+
+    try {
+      const doc = await fetchPromise
+      const { city, wea, temp, hum, windpower, winddir } = doc
+      return res.json({ err: "0", city, wea, temp, hum, winddir, windpower })
+    } catch (e) {
+      console.error('Fetch weather error:', e)
+      return res.status(500).json({ err: "4", msg: "external api error", detail: e.message })
+    } finally {
+      // 清理 pendingFetches
+      pendingFetches.delete(key)
+    }
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ err: "5", msg: "internal error" })
+  }
+})
 
 // 生成和风天气的 JWT token
 async function genHfWeaToken () {
